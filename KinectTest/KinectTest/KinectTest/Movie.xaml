@@ -1,0 +1,97 @@
+﻿<Page x:Class="KinectTest.Movie"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:k="http://schemas.microsoft.com/kinect/2013"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d" 
+      d:DesignWidth="1280" d:DesignHeight="720" Title="Movie">
+    <Page.Background>
+        <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\由上到下.png" />
+    </Page.Background>
+
+    <Grid Width="1280" Height="720">
+        <k:KinectSensorChooserUI HorizontalAlignment="Center" VerticalAlignment="Top" Name="sensorChooserUi" />
+        <k:KinectUserViewer k:KinectRegion.KinectRegion="{Binding ElementName=kinectRegion}" Height="100" HorizontalAlignment="Center" VerticalAlignment="Top" />
+
+        <k:KinectRegion Name="kinectRegion" Margin="0,80,0,0">
+            <k:KinectScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" HoverBackground="Transparent">
+                <Grid Width="1120" Height="1050" Margin="0,-100,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="280" />
+                        <ColumnDefinition Width="280" />
+                        <ColumnDefinition Width="280" />
+                        <ColumnDefinition Width="280" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="300" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="300" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="300" />
+                        <RowDefinition Height="40" />
+                    </Grid.RowDefinitions>
+
+                    <k:KinectTileButton x:Name="movieButton1"  Grid.Row="0" Grid.Column="0" Height="300" Width="225" Click="movieButton1_Click">
+                        <k:KinectTileButton.Background>
+                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Frozen.jpg" />
+                        </k:KinectTileButton.Background>
+                    </k:KinectTileButton>                   
+                    <k:KinectTileButton x:Name="movieButton2"  Grid.Row="0" Grid.Column="1" Height="300" Width="225" Click="movieButton2_Click">
+                        <k:KinectTileButton.Background>
+                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Gravity.jpg" />
+                        </k:KinectTileButton.Background>
+                    </k:KinectTileButton>
+                    <k:KinectTileButton x:Name="movieButton3"  Grid.Row="0" Grid.Column="2" Height="300" Width="225" Click="movieButton3_Click">
+                        <k:KinectTileButton.Background>
+                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\JackRyn.jpg" />
+                        </k:KinectTileButton.Background>
+                    </k:KinectTileButton>
+                    <k:KinectTileButton x:Name="movieButton4"  Grid.Row="0" Grid.Column="3" Height="300" Width="225" Click="movieButton4_Click">
+                        <k:KinectTileButton.Background>
+                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Linsanity.jpg" />
+                        </k:KinectTileButton.Background>
+                    </k:KinectTileButton>
+                    <Label Grid.Row="1" Grid.Column="0" Content="Frozen" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="1" Grid.Column="1" Content="Gravity" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="1" Grid.Column="2" Content="Jack Ryan" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="1" Grid.Column="3" Content="Linsanity" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+
+                    <k:KinectTileButton x:Name="movieButton5"  Grid.Row="2" Grid.Column="0" Height="300" Width="225" Click="movieButton5_Click">
+                        <k:KinectTileButton.Background>
+                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Rio2.jpg" />
+                        </k:KinectTileButton.Background>
+                    </k:KinectTileButton>
+                    <k:KinectTileButton x:Name="movieButton6"  Grid.Row="2" Grid.Column="1" Height="300" Width="225" Click="movieButton6_Click">
+                        <k:KinectTileButton.Background>
+                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\TheHobbit.jpg" />
+                        </k:KinectTileButton.Background>
+                    </k:KinectTileButton>
+                    <k:KinectTileButton x:Name="movieButton7"  Grid.Row="2" Grid.Column="2" Height="300" Width="225" Click="movieButton7_Click">
+                        <k:KinectTileButton.Background>
+                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Vikingdom.jpg" />
+                        </k:KinectTileButton.Background>
+                    </k:KinectTileButton>
+                    <k:KinectTileButton x:Name="movieButton8"  Grid.Row="2" Grid.Column="3" Height="300" Width="225" Click="movieButton8_Click">
+                        <k:KinectTileButton.Background>
+                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\EndersGame.jpg" />
+                        </k:KinectTileButton.Background>
+                    </k:KinectTileButton>
+
+                    <Label Grid.Row="3" Grid.Column="0" Content="Rio 2" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="3" Grid.Column="1" Content="Hobbit" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="3" Grid.Column="2" Content="Vikingdom" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="3" Grid.Column="3" Content="Ender's Game" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+
+                    <k:KinectTileButton  Grid.Row="4" Grid.Column="0" Click="BackButton_Click" Height="300" Width="225">
+                        <k:KinectTileButton.Background>
+                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Walverine.jpg" />
+                        </k:KinectTileButton.Background>
+                    </k:KinectTileButton>
+
+                    <Label Grid.Row="5" Grid.Column="0" Content="Iron-man" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                </Grid>
+            </k:KinectScrollViewer>
+        </k:KinectRegion>
+    </Grid>
+</Page>

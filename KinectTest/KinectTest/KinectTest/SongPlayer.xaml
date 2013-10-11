@@ -1,0 +1,15 @@
+﻿<Page x:Class="KinectTest.SongPlayer"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d" Loaded="Page_Loaded"
+	Title="Player" Height="720" Width="1280" >
+    <Page.Background>
+        <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\music1.jpg" />
+    </Page.Background>
+    <Grid>
+        <MediaElement Name="MoviePlayer" LoadedBehavior="Manual" UnloadedBehavior="Stop" Volume="10" />
+        <Label x:Name="Label1" FontSize="40" Foreground="LawnGreen" Content="" HorizontalAlignment="Left" Margin="451,31,0,0" VerticalAlignment="Top" Height="77" Width="382" Visibility="Hidden"/>
+    </Grid>
+</Page>
