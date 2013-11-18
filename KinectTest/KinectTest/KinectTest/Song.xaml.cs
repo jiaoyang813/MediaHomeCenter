@@ -111,10 +111,10 @@ namespace KinectTest
 
  
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private void songButton9_Click(object sender, RoutedEventArgs e)
         {
             _sensor.AllFramesReady -= _sensor_AllFramesReady;
-            SongPlayer newplayer=new SongPlayer("GangnamStyle");
+            SongPlayer newplayer=new SongPlayer("WithoutYou");
             this.NavigationService.Navigate(newplayer);
  
         }

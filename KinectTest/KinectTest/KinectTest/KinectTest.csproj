@@ -209,6 +209,7 @@
     <Resource Include="images\photo_icon1.png" />
     <Resource Include="MovieMusicImage\Walverine.jpg" />
     <Resource Include="images\helpicon.jpg" />
+    <Resource Include="MovieMusicImage\WithoutYou.jpg" />
     <Content Include="Movies\EndersGame.mp4" />
     <Content Include="Movies\Frozen.mp4" />
     <Content Include="Movies\Gravity.mp4" />
@@ -216,6 +217,7 @@
     <Content Include="Movies\Linsanity.mp4" />
     <Content Include="Movies\Rio2.mp4" />
     <Content Include="Movies\TheHobbit.mp4" />
+    <Content Include="Movies\TheWolverine.mp4" />
     <Content Include="Movies\Vikingdom.mp4" />
     <Content Include="Musics\CruiseFloridaGeorgiaLine.mp3" />
     <Content Include="Musics\Drake.mp3" />
@@ -224,6 +226,7 @@
     <Content Include="Musics\Royals.mp3" />
     <Content Include="Musics\WakeMeUp.mp3" />
     <Content Include="Musics\WalkingOnAir.mp3" />
+    <Content Include="Musics\WithoutYou.mp3" />
     <Content Include="Musics\WreckingBall.mp3" />
     <Resource Include="MovieMusicImage\Royal.jpg" />
     <Resource Include="MovieMusicImage\TheHobbit.jpg" />

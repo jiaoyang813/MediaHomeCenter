@@ -464,8 +464,8 @@ namespace KinectTest
                 }
 
                 //Volume control
-                if (Math.Abs(newRightHandPoint.Y - newHeadPoint.Y) < 150
-                   && newRightHandPoint.X - newRightShoulderPoint.X > -30)
+                if (Math.Abs(newRightHandPoint.Y - newHeadPoint.Y) < newRightShoulderPoint.Y - newHeadPoint.Y
+                   && Math.Abs(newRightHandPoint.X - newRightShoulderPoint.X) < newRightShoulderPoint.X - newHeadPoint.X)
                 {
                     VolumeControl(newRightHandPoint, newHeadPoint);
                 }
@@ -508,8 +508,7 @@ namespace KinectTest
             switch (VolumeState)
             {
                 case 0:
-                    if (newRightHandPoint.Y == newHeadPoint.Y
-                        && Math.Abs(newHeadPoint.X - newRightHandPoint.X) > 40)
+                    if (newRightHandPoint.Y == newHeadPoint.Y)
                     {
                         VolumeState = 1;
                         //volumeLabel.Content = "Volume:" + VolumeSlider.Value;

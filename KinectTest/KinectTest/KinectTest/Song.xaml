@@ -76,18 +76,18 @@
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
 
-                    <Label Grid.Row="3" Grid.Column="0" Content="Movie 5" Foreground="#FFC7CEEE" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
-                    <Label Grid.Row="3" Grid.Column="1" Content="Movie 6" Foreground="#FFC7CEEE" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
-                    <Label Grid.Row="3" Grid.Column="2" Content="Movie 7" Foreground="#FFC7CEEE" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
-                    <Label Grid.Row="3" Grid.Column="3" Content="Movie 8" Foreground="#FFC7CEEE" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="3" Grid.Column="0"  Foreground="#FFC7CEEE" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="3" Grid.Column="1"  Foreground="#FFC7CEEE" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="3" Grid.Column="2"  Foreground="#FFC7CEEE" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="3" Grid.Column="3"  Foreground="#FFC7CEEE" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
 
-                    <k:KinectTileButton  Grid.Row="4" Grid.Column="0" Click="BackButton_Click" Height="300" Width="225">
+                    <k:KinectTileButton x:Name="songButton9" Grid.Row="4" Grid.Column="0" Click="songButton9_Click" Height="300" Width="225">
                         <k:KinectTileButton.Background>
-                            <ImageBrush ImageSource="images/movie_icon.png" />
+                            <ImageBrush ImageSource="MovieMusicImage/WithoutYou.jpg" />
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
 
-                    <Label Grid.Row="5" Grid.Column="0" Content="Movie 9" Foreground="#FFC7CEEE" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
+                    <Label Grid.Row="5" Grid.Column="0" Foreground="#FFC7CEEE" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
                 </Grid>
             </k:KinectScrollViewer>
         </k:KinectRegion>

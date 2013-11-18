@@ -59,7 +59,7 @@ namespace KinectTest
         {
             this.movieName = s;
            // this._sensor = w.Kinect;
-            MoviePlayer.Source = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Movies\" + movieName + ".MP4", UriKind.Absolute);
+            MoviePlayer.Source = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Movies\" + movieName + ".MP4", UriKind.RelativeOrAbsolute);
             MoviePlayer.Play();
         }
 
@@ -68,7 +68,7 @@ namespace KinectTest
         {
             this.movieName = s;
             this._sensor = w.Kinect;
-            MoviePlayer.Source = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Movies\" + movieName + ".MP4", UriKind.Absolute);
+            MoviePlayer.Source = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Movies\" + movieName + ".MP4", UriKind.RelativeOrAbsolute);
             MoviePlayer.Play();
         }
 
@@ -452,8 +452,8 @@ namespace KinectTest
                 }
 
                 //Volume control
-                if (Math.Abs(newRightHandPoint.Y - newHeadPoint.Y) < 150
-                   && newRightHandPoint.X - newRightShoulderPoint.X > -30)
+                if (Math.Abs(newRightHandPoint.Y - newHeadPoint.Y) < newRightShoulderPoint.Y - newHeadPoint.Y
+                   && Math.Abs(newRightHandPoint.X - newRightShoulderPoint.X) < newRightShoulderPoint.X - newHeadPoint.X)
                 {
                     VolumeControl(newRightHandPoint, newHeadPoint);
                 }
@@ -491,14 +491,14 @@ namespace KinectTest
 
         private void VolumeControl(RightHandPoint newRightHandPoint, HeadPoint newHeadPoint)
         {
-            //volumeLabel.Content = "Volume:" + VolumeSlider.Value;
-           // VolumeSlider.Visibility = System.Windows.Visibility.Visible;
+            
             switch (VolumeState)
             {
                 case 0:
-                    if (newRightHandPoint.Y == newHeadPoint.Y
-                        && Math.Abs(newHeadPoint.X - newRightHandPoint.X) > 40)
+                    if (newRightHandPoint.Y == newHeadPoint.Y)       
                     {
+                       // volumeLabel.Content = "Volume:" + VolumeSlider.Value;
+                        //VolumeSlider.Visibility = System.Windows.Visibility.Visible;
                         VolumeState = 1;
                         //volumeLabel.Content = "Volume:" + VolumeSlider.Value;
                     }

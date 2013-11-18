@@ -7,7 +7,7 @@
       mc:Ignorable="d"  Loaded="Page_Loaded"
       d:DesignWidth="1280" d:DesignHeight="720" Title="Movie">
     <Page.Background>
-        <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\由上到下.png" />
+        <ImageBrush ImageSource="images\由上到下.png" />
     </Page.Background>
 
     <Grid Width="1280" Height="720">
@@ -35,22 +35,22 @@
 
                     <k:KinectTileButton x:Name="movieButton1"  Grid.Row="0" Grid.Column="0" Height="300" Width="225" Click="movieButton1_Click">
                         <k:KinectTileButton.Background>
-                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Frozen.jpg" />
+                            <ImageBrush ImageSource="MovieMusicImage\Frozen.jpg" />
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
                     <k:KinectTileButton x:Name="movieButton2"  Grid.Row="0" Grid.Column="1" Height="300" Width="225" Click="movieButton2_Click">
                         <k:KinectTileButton.Background>
-                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Gravity.jpg" />
+                            <ImageBrush ImageSource="MovieMusicImage\Gravity.jpg" />
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
                     <k:KinectTileButton x:Name="movieButton3"  Grid.Row="0" Grid.Column="2" Height="300" Width="225" Click="movieButton3_Click">
                         <k:KinectTileButton.Background>
-                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\JackRyn.jpg" />
+                            <ImageBrush ImageSource="MovieMusicImage\JackRyn.jpg" />
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
                     <k:KinectTileButton x:Name="movieButton4"  Grid.Row="0" Grid.Column="3" Height="300" Width="225" Click="movieButton4_Click">
                         <k:KinectTileButton.Background>
-                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Linsanity.jpg" />
+                            <ImageBrush ImageSource="MovieMusicImage\Linsanity.jpg" />
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
                     <Label Grid.Row="1" Grid.Column="0" Content="Frozen" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
@@ -60,22 +60,22 @@
 
                     <k:KinectTileButton x:Name="movieButton5"  Grid.Row="2" Grid.Column="0" Height="300" Width="225" Click="movieButton5_Click">
                         <k:KinectTileButton.Background>
-                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Rio2.jpg" />
+                            <ImageBrush ImageSource="MovieMusicImage\Rio2.jpg" />
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
                     <k:KinectTileButton x:Name="movieButton6"  Grid.Row="2" Grid.Column="1" Height="300" Width="225" Click="movieButton6_Click">
                         <k:KinectTileButton.Background>
-                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\TheHobbit.jpg" />
+                            <ImageBrush ImageSource="MovieMusicImage\TheHobbit.jpg" />
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
                     <k:KinectTileButton x:Name="movieButton7"  Grid.Row="2" Grid.Column="2" Height="300" Width="225" Click="movieButton7_Click">
                         <k:KinectTileButton.Background>
-                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Vikingdom.jpg" />
+                            <ImageBrush ImageSource="MovieMusicImage\Vikingdom.jpg" />
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
                     <k:KinectTileButton x:Name="movieButton8"  Grid.Row="2" Grid.Column="3" Height="300" Width="225" Click="movieButton8_Click">
                         <k:KinectTileButton.Background>
-                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\EndersGame.jpg" />
+                            <ImageBrush ImageSource="MovieMusicImage\EndersGame.jpg" />
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
 
@@ -84,9 +84,9 @@
                     <Label Grid.Row="3" Grid.Column="2" Content="Vikingdom" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
                     <Label Grid.Row="3" Grid.Column="3" Content="Ender's Game" Foreground="Black" FontSize="22" FontFamily="Arial" HorizontalAlignment="Center" />
 
-                    <k:KinectTileButton  Grid.Row="4" Grid.Column="0" Height="300" Width="225">
+                    <k:KinectTileButton x:Name="movieButton9"  Click="movieButton9_Click" Grid.Row="4" Grid.Column="0" Height="300" Width="225">
                         <k:KinectTileButton.Background>
-                            <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\MovieMusicImage\Walverine.jpg" />
+                            <ImageBrush ImageSource="MovieMusicImage\Walverine.jpg" />
                         </k:KinectTileButton.Background>
                     </k:KinectTileButton>
 

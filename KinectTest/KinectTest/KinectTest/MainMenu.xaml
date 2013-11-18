@@ -22,7 +22,7 @@
                     </k:KinectTileButton.Background>
 
                 </k:KinectTileButton>
-                <k:KinectTileButton  Click="HelpButtonClick" Height="156" Width="152"  BorderBrush="Gray" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="48,-82,0,0">
+                <k:KinectTileButton  Click="HelpButtonClick" Height="172" Width="182"  BorderBrush="Gray" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="48,-82,0,0">
                     <k:KinectTileButton.Background>
                         <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\helpicon.jpg" />
                     </k:KinectTileButton.Background>
@@ -42,8 +42,9 @@
                 </k:KinectTileButton>
             </Grid>
         </k:KinectRegion>
-        <Label x:Name="MovieLabel" FontSize="40" Content="Movie" Margin="161,589,921,58"/>
-        <Label x:Name="MusicLabel" FontSize="40" Content="Music" Margin="588,589,494,58"/>
-        <Label x:Name="PhotoLabel" FontSize="40" Content="Photo" Margin="1015,589,67,58"/>
+        <Label x:Name="MovieLabel" FontSize="40" Content="Movie" Margin="151,589,997,58"/>
+        <Label x:Name="MusicLabel" FontSize="40" Content="Music" Margin="592,589,548,58"/>
+        <Label x:Name="PhotoLabel" FontSize="40" Content="Photo" Margin="1015,589,141,58"/>
+        <Label x:Name="HomeMediaCenter" FontSize="60" Foreground="Black" Content="Home Media Center" Margin="346,100,302,535"/>
     </Grid>
 </Page>

@@ -171,6 +171,12 @@ namespace KinectTest
             this.NavigationService.Navigate(newplayer);
         }
 
+        private void movieButton9_Click(object sender, RoutedEventArgs e)
+        {
+            _sensor.AllFramesReady -= _sensor_AllFramesReady;
+            Player newplayer = new Player("TheWolverine");
+            this.NavigationService.Navigate(newplayer);
+        }
   
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
@@ -348,6 +354,8 @@ namespace KinectTest
                 
                  
              }
+
+            
 
 
         
