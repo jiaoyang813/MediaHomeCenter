@@ -14,7 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Kinect;
 using Microsoft.Kinect.Toolkit;
-
+using System.Windows.Threading;
 namespace KinectTest
 {
     /// <summary>
@@ -23,7 +23,7 @@ namespace KinectTest
     public partial class Player : Page
     {
         KinectSensor _sensor;
-        bool playOrNot = false;
+        bool playOrNot = true;
         bool closing = false;
         const int skeletoncount = 6;
         Skeleton[] allSkeletons = new Skeleton[skeletoncount];
@@ -31,59 +31,76 @@ namespace KinectTest
         private List<LeftHandPoint> LeftHandPointsList;
         private int LeftWave = 0;
         private bool LeftWaveStart = false;
+        private bool IsLeftHandWave = false;
+
         private int VolumeState = 0;
+        private bool IsVolumeStart = false;
         private bool VolumeStart = false;
+        private double PreviousVolumeValue = 10;// set as default volume
 
-        private int RotateState = 0;
-        private bool RotateStart = false;
+        //private int RotateState = 0;
+        //private bool RotateStart = false;
 
+        private bool IsRightSwipeStart = false;
+        private bool IsLeftSwipeStart = false;
 
-        //System.Timers.Timer volumeUpTimer;
-        //System.Timers.Timer volumeDownTimer;
-
-        //private int counter = 0;
-        // private List<double> historyPoints;
         private string movieName;
         System.Threading.Timer timer;
         public Player()
         {
             InitializeComponent();
             LeftHandPointsList = new List<LeftHandPoint>();
-           // RightHandPointsList = new List<RightHandPoint>();
-            //VolumeDownPointsList = new List<RightHandPoint>();
+            _sensor = Generics.GlobalKinectSensorChooser.Kinect;
+            // start to play at first
+            //MoviePlayer.Play();
 
-
-            //volumeUpTimer = new System.Timers.Timer(500);
-            //volumeUpTimer.Elapsed += new System.Timers.ElapsedEventHandler(volumeUpTimer_Elapsed);
-            //volumeUpTimer.AutoReset = true;
-            //volumeUpTimer.Enabled = false;
-
-            //volumeDownTimer = new System.Timers.Timer(500);
-            //volumeDownTimer.Elapsed += new System.Timers.ElapsedEventHandler(volumeDownTimer_Elapsed);
         }
-        public Player(string s,KinectSensorChooser w) : this()
+        public Player(string s) : this()
+        {
+            this.movieName = s;
+           // this._sensor = w.Kinect;
+            MoviePlayer.Source = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Movies\" + movieName + ".MP4", UriKind.Absolute);
+            MoviePlayer.Play();
+        }
+
+        public Player(string s, KinectSensorChooser w)
+            : this()
         {
             this.movieName = s;
             this._sensor = w.Kinect;
             MoviePlayer.Source = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Movies\" + movieName + ".MP4", UriKind.Absolute);
+            MoviePlayer.Play();
         }
-        //private void volumeUpTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        //{
-        //    //throw new NotImplementedException();
-        //    volumeUpTimer.Enabled = false;
-        //   if(MoviePlayer.Volume<=100) MoviePlayer.Volume += 5;
-        //   //Label1.Content = MoviePlayer.Volume;
-        //   MessageBox.Show(MoviePlayer.Volume.ToString());
-        //}
 
-        //private void volumeDownTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        //{
-        //    volumeDownTimer.Enabled = false;
-        //    if(MoviePlayer.Volume>=5) MoviePlayer.Volume -= 5;
-        //    //Label1.Content = MoviePlayer.Volume;
-        //    // throw new NotImplementedException();
-        //    MessageBox.Show(MoviePlayer.Volume.ToString());
-        //}
+        private void player_Loaded(object sender, RoutedEventArgs e)
+        {
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(1000);
+            timer.Tick += (ss, ee) =>
+            {
+                //显示当前视频进度
+                var ts = MoviePlayer.Position;
+                label1.Content = string.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
+                ProgressBar.Value = ts.TotalMilliseconds;
+            };
+            timer.Start();
+        }
+
+        private void player_MediaOpened(object sender, RoutedEventArgs e)
+        {
+            //显示视频的时长
+            var ts = MoviePlayer.NaturalDuration.TimeSpan;
+            label2.Content = string.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
+            ProgressBar.Maximum = ts.TotalMilliseconds;
+        }
+
+        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            //调整视频进度
+            var ts = TimeSpan.FromMilliseconds(e.NewValue);
+
+            MoviePlayer.Position = ts;
+        }
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             if (_sensor != null)
@@ -110,12 +127,13 @@ namespace KinectTest
                         _sensor.SkeletonStream.Enable();
                         _sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(_sensor_AllFramesReady);
                         _sensor.Start();
-                        // MessageBox.Show("Started");
-
+                      
                     }
                 }
             }
         }
+
+
         private void _sensor_AllFramesReady(object sender, AllFramesReadyEventArgs e)
         {
             if (closing)
@@ -322,7 +340,7 @@ namespace KinectTest
                     Z = RightHandDepthPoint.Depth,
                     T = DateTime.Now
                 };
-                RightHandPoint startRightHandPoint;
+               
 
                 //left hand point information
                 DepthImagePoint LeftHandDepthPoint = depthFrame.MapFromSkeletonPoint(first.Joints[JointType.HandLeft].Position);
@@ -333,7 +351,7 @@ namespace KinectTest
                     Z = LeftHandDepthPoint.Depth,
                     T = DateTime.Now
                 };
-                LeftHandPoint startLeftHandPoint;
+                
                 // right shoulder point information
                 DepthImagePoint RightShoulderDepthPoint = depthFrame.MapFromSkeletonPoint(first.Joints[JointType.ShoulderRight].Position);
                 RightShoulderPoint newRightShoulderPoint = new RightShoulderPoint()
@@ -393,374 +411,306 @@ namespace KinectTest
                     T = DateTime.Now
                 };
 
-                //DepthImagePoint HipCenterDepthPoint = depthFrame.MapFromSkeletonPoint(first.Joints[JointType.HipCenter].Position);
-                //SpinePoint newSpinePoint = new SpinePoint()
+                //user should stand in the right place before eveything start
+                // the two if condition requires the user to stand in front of Kinect in a box area
+                if (newHeadPoint.Z < 1700 || newHeadPoint.Z > 2000)
+                {
+                    StatusLabel.Content = "";
+                    ProgressBar.Visibility = System.Windows.Visibility.Hidden;
+                    label1.Visibility = System.Windows.Visibility.Hidden;
+                    label2.Visibility = System.Windows.Visibility.Hidden;
+                    LeftHandPointsList.Clear();
+                    return;
+                }
+                
+                // user should stand right in front of Kinect
+                //if (newHeadPoint.X > 320 || newHeadPoint.X < 280)
                 //{
-                //    X = HipCenterDepthPoint.X,
-                //    Y = HipCenterDepthPoint.Y,
-                //    Z = HipCenterDepthPoint.Depth,
-                //    T = DateTime.Now
-                //};
+                //    StatusLabel.Content = "";
+                //    return;
+                //}
 
-                //MessageBox.Show(newHeadPoint.X.ToString() + newHeadPoint.Y.ToString());
-
-              
-
-
-                //Volume Up and Down
-                double x1 = newRightElbowPoint.X;
-                double y1 = newRightElbowPoint.Y;// elbow point(x1, y1)
-                double x2 = newRightWristPoint.X;
-                double y2 = newRightWristPoint.Y;// Wrist point(x2, y2)
-                double x3 = newRightHandPoint.X;
-                double y3 = newRightHandPoint.Y; // hand point (x3, y3)
-
-                double angle1 = Math.Abs(y2 - y1) / Math.Abs(x2 - x1);
-                double angle2 = Math.Abs(y2 - y3) / Math.Abs(x2 - x3);
-                
-
-                if (newRightHandPoint.X > newRightShoulderPoint.X + 100)
-                {
-                    VolumeStart = true;
-                    switch (VolumeState)
-                    {
-                        case 0:
-                            if (newRightHandPoint.Y < newRightShoulderPoint.Y)
-                            {
-                                VolumeState = 1; // enter volume up   
-                            }// right hand in upper position
-                            if (newRightHandPoint.Y > newRightShoulderPoint.Y)
-                            {
-                                VolumeState = 2; // right hand in lower position   
-                            }
-                            break;
-                        case 1:
-
-                            if (newRightHandPoint.Y > newRightShoulderPoint.Y)
-                            {
-                                VolumeState = 2; // right hand in lower position
-                            }
-                            else if (Math.Abs(angle1 - angle2) > 0.5) //angle change
-                            {
-                                VolumeState = 3;
-                                // MessageBox.Show("VolumeUp");    
-                            }
-                            break;
-
-                        case 2:
-
-                            if (newRightHandPoint.Y < newRightShoulderPoint.Y)
-                            {
-                                VolumeState = 1;  // right hand in upper position  
-                            }
-                            else if (Math.Abs(angle1 - angle2) > 0.9)//angle change
-                            {
-                                VolumeState = 4;
-                                //MessageBox.Show("VolumeDown");    
-                            }
-                            break;
-
-                    }
-                }
-                
-                if (Math.Abs(newRightHandPoint.X - newRightShoulderPoint.X) < 50 && newRightHandPoint.Y > newRightElbowPoint.Y && VolumeStart == true)
-                {
-                    if (VolumeState == 3)
-                    {
-                        VolumeStart = false;
-                        VolumeState = 0;
-                        MoviePlayer.Volume += 10;
-                        Label1.UpdateLayout();
-                        if (Label1.Visibility == Visibility.Hidden)
-                        {
-                            Label1.Content = "VOLUME "+MoviePlayer.Volume.ToString();
-                            Label1.Visibility = Visibility.Visible;
-                            
-                           
-                                timer = new System.Threading.Timer(
-                                    (state) =>
-                                    {
-                                        Label1.Dispatcher.BeginInvoke((Action)(() =>
-                                        {
-                                            Label1.Visibility = Visibility.Hidden;
-                                        }));
-                                    }, null, 1000, Int32.MaxValue);
-
-                         
-                        }
-                        else
-                        {
-                            Label1.Content = "VOLUME " + MoviePlayer.Volume.ToString();
-                        }
-                        
-                        //MessageBox.Show(MoviePlayer.Volume.ToString());
-                        return;
-                    }
-
-                    if (VolumeState == 4)
-                    {
-                        VolumeStart = false;
-                        VolumeState = 0;
-                        MoviePlayer.Volume -= 10;
-                        Label1.UpdateLayout();
-                        if (Label1.Visibility == Visibility.Hidden)
-                        {
-                            Label1.Content = "VOLUME "+MoviePlayer.Volume.ToString();
-                            Label1.Visibility = Visibility.Visible;
-                            
-                           
-                             timer = new System.Threading.Timer(
-                                    (state) =>
-                                    {
-                                        Label1.Dispatcher.BeginInvoke((Action)(() =>
-                                        {
-                                            Label1.Visibility = Visibility.Hidden;
-                                        }));
-                                    },null,1000,Int32.MaxValue);
-                             
-                           
-                        }
-                        else
-                        {
-                            Label1.Content = "VOLUME " + MoviePlayer.Volume.ToString(); 
-                        }
-                        //MessageBox.Show(MoviePlayer.Volume.ToString());
-                        return;
-                    }
-                }//end of volume control
-                // rotate gesture to move forward and backward
-                // state 0 = in the body area, 1 = spine, 2 = rightshoulder, 3 = head, 4 = leftshoulder
-                if (newRightHandPoint.X > newLeftShoulderPoint.X && newRightHandPoint.X < newRightShoulderPoint.X)
-                       // && newRightHandPoint.Y < newSpinePoint.Y && newRightHandPoint.Y > newHeadPoint.Y)
-                {
-                    RotateStart = true;
-                   
-
-                    switch (RotateState)
-                    {
-                       
-                        case 0:
-                            if (Math.Abs(newRightHandPoint.X - newRightShoulderPoint.X) < 70 &&
-                                Math.Abs(newRightHandPoint.Y - newRightShoulderPoint.Y) < 70)
-                            {
-                                RotateState = 1;   // leftSHoulder
-                                //MessageBox.Show("Enter Rotate2");
-                            }
-                            break;
-
-                        case 1:
-                            if (Math.Abs(newRightHandPoint.X - newHeadPoint.X) < 70 &&
-                                Math.Abs(newRightHandPoint.Y - newHeadPoint.Y) < 70)
-                            {
-                                RotateState = 2;   // head
-                                //MessageBox.Show("Enter Rotate3");
-                            }
-                            break;
-                        case 2:
-                            if (Math.Abs(newRightHandPoint.X - newLeftShoulderPoint.X) < 70 &&
-                                Math.Abs(newRightHandPoint.Y - newLeftShoulderPoint.Y) < 70)
-                            {
-                                RotateState = 3;   // leftSHoulder
-                                //MessageBox.Show("Enter Rotate4");
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-
-                }
-
-
-                if ( RotateStart == true)
-                {
-                    if (RotateState == 3)
-                    {
-                        RotateStart = false;
-                        RotateState = 0;
-                        MoviePlayer.Position=MoviePlayer.Position+TimeSpan.FromSeconds(5);
-                        Label1.UpdateLayout();
-                        if (Label1.Visibility == Visibility.Hidden)
-                        {
-                            Label1.Content = "FORWARD";
-                            Label1.Visibility = Visibility.Visible;
-
-
-                            timer = new System.Threading.Timer(
-                                   (state) =>
-                                   {
-                                       Label1.Dispatcher.BeginInvoke((Action)(() =>
-                                       {
-                                           Label1.Visibility = Visibility.Hidden;
-                                       }));
-                                   }, null, 1000, Int32.MaxValue);
-
-
-                        }
-                        else
-                        {
-                            Label1.Content = "FORWARD";
-                        }
-                        return;
-                    }
-                } // end of rotate backward
-                //left hand wave gesture(start = 0, raisehand = 1, rightside = 2, leftside = 3, putdown = 4)
-                if (newLeftHandPoint.Y < newHeadPoint.Y)
-                {
-                    LeftWaveStart = true;
-
-                    switch (LeftWave)
-                    {
-                        case 0:
-                            if (newLeftHandPoint.Y < newHeadPoint.Y)
-                                //seg 1 of leftwave
-                                LeftWave = 1;
-                            break;
-                        case 1:
-                            if (newLeftHandPoint.X > newLeftElbowPoint.X + 50)
-                                LeftWave = 2;
-                            break;
-                        case 2:
-                            if (newLeftHandPoint.X + 50 < newLeftElbowPoint.X)
-                                LeftWave = 3;
-                            break;
-                        //case 3:
-                        //    if (newLeftHandPoint.Y > newLeftShoulderPoint.Y)
-                        //        LeftWave = 4;
-                        //    break;
-                    }
-
-                }
-                // case 4: putdown hands
-                if (newLeftHandPoint.Y > newLeftElbowPoint.Y && LeftWaveStart == true)
-                {
-                    if (LeftWave == 3)
-                    {
-                        LeftWaveStart = false;
-                        LeftWave = 0;
-                        (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("MainMenu.xaml", UriKind.Relative);
-                        return;
-                    }
-                } //end of waveleft
-               
-                
-                // the  press event;
+                StatusLabel.Content = "Control Mode(1.7m~2m): "+ newHeadPoint.Z/1000+ "m";
+                ProgressBar.Visibility = System.Windows.Visibility.Visible;
+                label1.Visibility = System.Windows.Visibility.Visible;
+                label2.Visibility = System.Windows.Visibility.Visible;
+                // the left hand  push event;
                 if (newLeftHandPoint.X > newLeftElbowPoint.X)
                 {
-                    LeftHandPointsList.Add(newLeftHandPoint);
-                    startLeftHandPoint = LeftHandPointsList[0];
+                    Push(newLeftHandPoint, newLeftElbowPoint);
+                }
 
 
-                    // check if press gesture is in the boundary box;
-                    if (Math.Abs(startLeftHandPoint.X - newLeftHandPoint.X) > 100 
-                            || Math.Abs(startLeftHandPoint.Y - newLeftHandPoint.Y) > 100)
+                if (newLeftHandPoint.Y < newHeadPoint.Y)// left hand wave to quit
+                {
+                    // MessageBox.Show("Left wave");
+                    LeftHandWave(newLeftHandPoint, newHeadPoint, newLeftElbowPoint);
+                }
+                else
+                {
+                    IsLeftHandWave = false;
+                }
+
+                //Volume control
+                if (Math.Abs(newRightHandPoint.Y - newHeadPoint.Y) < 150
+                   && newRightHandPoint.X - newRightShoulderPoint.X > -30)
+                {
+                    VolumeControl(newRightHandPoint, newHeadPoint);
+                }
+                else
+                {
+                    IsVolumeStart = false;
+                }
+
+
+                if (newRightHandPoint.Y > newRightShoulderPoint.Y
+                    && newRightHandPoint.X > newHeadPoint.X + 200)//right swipe
+                {
+                    //trigger the right swipe gesture
+                    rightSwipeGesture();
+                }
+                else
+                {
+                    IsRightSwipeStart = false;
+                }
+                
+                //left swipe
+                if ( newLeftHandPoint.Y > newLeftShoulderPoint.Y && newLeftHandPoint.X < newHeadPoint.X - 200)
+                {
+                    leftSwipeGesture();
+                }
+                else
+                {
+                    IsLeftSwipeStart = false;
+                }
+          
+            }// end of using statement
+        }
+
+        // end of GetCamera point
+
+        private void VolumeControl(RightHandPoint newRightHandPoint, HeadPoint newHeadPoint)
+        {
+            //volumeLabel.Content = "Volume:" + VolumeSlider.Value;
+           // VolumeSlider.Visibility = System.Windows.Visibility.Visible;
+            switch (VolumeState)
+            {
+                case 0:
+                    if (newRightHandPoint.Y == newHeadPoint.Y
+                        && Math.Abs(newHeadPoint.X - newRightHandPoint.X) > 40)
                     {
-                        LeftHandPointsList.Clear();
-                        return;
+                        VolumeState = 1;
+                        //volumeLabel.Content = "Volume:" + VolumeSlider.Value;
+                    }
+                    break;
+                case 1:
+                    VolumeSlider.Value = PreviousVolumeValue + (newHeadPoint.Y - newRightHandPoint.Y);
+                    VolumeSlider.Visibility = System.Windows.Visibility.Visible;
+                    volumeLabel.Content = "Volume:" + VolumeSlider.Value;// ( newHeadPoint.Y - newRightHandPoint.Y )
+                    
+                    if (newRightHandPoint.X - newHeadPoint.X < 50)
+                    {
+                        VolumeState = 2;
+                        IsVolumeStart = true;
+                        //MessageBox.Show("Value Changed1 ");
+                    }
+                    
+                    break;
+                default:
+                    break;
+            }
+
+
+            if (!VolumeStart && IsVolumeStart == true)
+            {
+                //if (!VolumeStart)
+               // MessageBox.Show("Value Changed2 " + (newHeadPoint.Y - newRightHandPoint.Y));
+                IsVolumeStart = false;
+                PreviousVolumeValue = VolumeSlider.Value;
+                volumeLabel.Content = "";
+                VolumeSlider.Visibility = System.Windows.Visibility.Hidden;
+                VolumeStart = true;
+                VolumeState = 0;
+                //VolumeSlider.Value += newHeadPoint.Y - RightHandPointsList.Last().Y;
+                //return;
+            }
+            else
+            {
+                VolumeStart = false;
+            }
+
+        }
+
+        private void rightSwipeGesture()
+        {
+            if (!IsRightSwipeStart)
+            {
+                IsRightSwipeStart = true;
+                // write the control here
+                MoviePlayer.Position = MoviePlayer.Position + TimeSpan.FromSeconds(5);
+                Label1.UpdateLayout();
+                if (Label1.Visibility == Visibility.Hidden)
+                {
+                    Label1.Content = "FORWARD";
+                    Label1.Visibility = Visibility.Visible;
+                    timer = new System.Threading.Timer(
+                           (state) =>
+                           {
+                               Label1.Dispatcher.BeginInvoke((Action)(() =>
+                               {
+                                   Label1.Visibility = Visibility.Hidden;
+                               }));
+                           }, null, 1000, Int32.MaxValue);
+
+                }
+                else
+                {
+                    Label1.Content = "FORWARD";
+                }
+            }
+        }// end of righte swipte gesture
+
+
+        private void leftSwipeGesture()
+        {
+            if (!IsLeftSwipeStart)
+            {
+                IsLeftSwipeStart = true;
+                //write control here
+                MoviePlayer.Position = MoviePlayer.Position - TimeSpan.FromSeconds(5);
+                Label1.UpdateLayout();
+                if (Label1.Visibility == Visibility.Hidden)
+                {
+                    Label1.Content = "BACKWARD";
+                    Label1.Visibility = Visibility.Visible;
+                    timer = new System.Threading.Timer(
+                           (state) =>
+                           {
+                               Label1.Dispatcher.BeginInvoke((Action)(() =>
+                               {
+                                   Label1.Visibility = Visibility.Hidden;
+                               }));
+                           }, null, 1000, Int32.MaxValue);
+
+                }
+                else
+                {
+                    Label1.Content = "BACKWARD";
+                }
+            }
+        }
+
+
+        //left hand push gesture
+        private void Push(LeftHandPoint newLeftHandPoint,LeftElbowPoint newLeftElbowPoint)
+        {
+                LeftHandPoint startLeftHandPoint;
+                LeftHandPointsList.Add(newLeftHandPoint);
+                startLeftHandPoint = LeftHandPointsList[0];
+
+                // check if press gesture is in the boundary box;
+                if (Math.Abs(startLeftHandPoint.X - newLeftHandPoint.X) > 100
+                        || Math.Abs(startLeftHandPoint.Y - newLeftHandPoint.Y) > 100)
+                {
+                    LeftHandPointsList.Clear();
+                    return;
+                }
+
+
+                if (Math.Abs(startLeftHandPoint.X - newLeftHandPoint.X) < 100
+                    && Math.Abs(startLeftHandPoint.Y - newLeftHandPoint.Y) < 100)
+                {
+                    if ((newLeftHandPoint.T - startLeftHandPoint.T).Milliseconds > 700)
+                    {
+                        LeftHandPointsList.RemoveAt(0);
+                        startLeftHandPoint = LeftHandPointsList[0];
                     }
 
-
-                    if (Math.Abs(startLeftHandPoint.X - newLeftHandPoint.X) < 100 
-                        && Math.Abs(startLeftHandPoint.Y - newLeftHandPoint.Y) < 100)
+                    if (startLeftHandPoint.Z - newLeftHandPoint.Z > 250)
                     {
-                        if ((newLeftHandPoint.T - startLeftHandPoint.T).Milliseconds > 500)
-                        {
-                            LeftHandPointsList.RemoveAt(0);
-                            startLeftHandPoint = LeftHandPointsList[0];
+                        LeftHandPointsList.Clear();
 
-                        }
-
-                        if (startLeftHandPoint.Z - newLeftHandPoint.Z > 300)
+                        if (!playOrNot)
                         {
-                            LeftHandPointsList.Clear();
-                            
-                            if(!playOrNot)
+                            MoviePlayer.Play();
+                            playOrNot = true;
+                            Label1.UpdateLayout();
+                            if (Label1.Visibility == Visibility.Hidden)
                             {
-                                MoviePlayer.Play();
-                                playOrNot=true;
-                                Label1.UpdateLayout();
-                                if (Label1.Visibility == Visibility.Hidden)
-                                {
-                                    Label1.Content = "PLAY";
-                                    Label1.Visibility = Visibility.Visible;
+                                Label1.Content = "PLAY";
+                                Label1.Visibility = Visibility.Visible;
 
-
-                                    timer = new System.Threading.Timer(
-                                           (state) =>
+                                timer = new System.Threading.Timer(
+                                       (state) =>
+                                       {
+                                           Label1.Dispatcher.BeginInvoke((Action)(() =>
                                            {
-                                               Label1.Dispatcher.BeginInvoke((Action)(() =>
-                                               {
-                                                   Label1.Visibility = Visibility.Hidden;
-                                               }));
-                                           }, null, 1000, Int32.MaxValue);
+                                               Label1.Visibility = Visibility.Hidden;
+                                           }));
+                                       }, null, 1000, Int32.MaxValue);
 
-
-                                }
-                                else
-                                {
-                                    Label1.Content = "PLAY";
-                                }
                             }
                             else
                             {
-                                MoviePlayer.Pause();
-                                playOrNot = false;
-                                Label1.UpdateLayout();
-                                if (Label1.Visibility == Visibility.Hidden)
-                                {
-                                    Label1.Content = "PAUSE";
-                                    Label1.Visibility = Visibility.Visible;
+                                Label1.Content = "PLAY";
+                            }
+                        }
+                        else
+                        {
+                            MoviePlayer.Pause();
+                            playOrNot = false;
+                            Label1.UpdateLayout();
+                            if (Label1.Visibility == Visibility.Hidden)
+                            {
+                                Label1.Content = "PAUSE";
+                                Label1.Visibility = Visibility.Visible;
 
 
-                                    timer = new System.Threading.Timer(
-                                           (state) =>
+                                timer = new System.Threading.Timer(
+                                       (state) =>
+                                       {
+                                           Label1.Dispatcher.BeginInvoke((Action)(() =>
                                            {
-                                               Label1.Dispatcher.BeginInvoke((Action)(() =>
-                                               {
-                                                   Label1.Visibility = Visibility.Hidden;
-                                               }));
-                                           }, null, 1000, Int32.MaxValue);
+                                               Label1.Visibility = Visibility.Hidden;
+                                           }));
+                                       }, null, 1000, Int32.MaxValue);
 
 
-                                }
-                                else
-                                {
-                                    Label1.Content = "PAUSE";
-                                }
-
+                            }
+                            else
+                            {
+                                Label1.Content = "PAUSE";
                             }
 
                         }
 
                     }
 
-                   //throw new NotImplementedException();
+                }
 
-                }// end of lefthand press
-            }
-        }// end of GetCamera point
-        
-         
+            // end of lefthand press
 
-
-
-
-        private void ResetGesturePoints(List<RightHandPoint> gesturePoints)
-        {
-            for (int i = 0; i < gesturePoints.Count; i++)
-            {
-                gesturePoints.RemoveAt(i);
-            }
-            // throw new NotImplementedException();
+           
         }
 
-        //private void CameraPosition(FrameworkElement element, ColorImagePoint point)
-        //{
-        //    Canvas.SetLeft(element, point.X - element.Width / 2 );
-        //    Canvas.SetTop(element, point.Y - element.Height / 2 );
+        //a very simple version of left hand wave
+        private void LeftHandWave(LeftHandPoint newLeftHandPoint, HeadPoint newHeadPoint, LeftElbowPoint newLeftElbowPoint)
+        {
+            //left hand wave gesture(start = 0, raisehand = 1, rightside = 2, leftside = 3, putdown = 4)
+            if (!IsLeftHandWave && newHeadPoint.X - newLeftHandPoint.X > 200)
+            //left hand wave gesture(start = 0, raisehand = 1, rightside = 2, leftside = 3, putdown = 4)
+            {
+                IsLeftHandWave = true;
+                _sensor.AllFramesReady -= _sensor_AllFramesReady;
+                (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("Movie.xaml", UriKind.RelativeOrAbsolute);
+            }
 
-        //    //throw new NotImplementedException();
-        //}
+            // closing the event handler
+            
+   
+        }
 
+     
         private Skeleton GetFirstSkeleton(AllFramesReadyEventArgs e)
         {
             using (SkeletonFrame skeletonFrameData = e.OpenSkeletonFrame())
@@ -789,14 +739,16 @@ namespace KinectTest
                 sensor.AudioSource.Stop();
             }
         }
+  
 
-       // private void Page_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        //{
-         //   StopKinect(_sensor);
-        //}
+        private void MoviePlayer_MediaEnded_1(object sender, RoutedEventArgs e)
+        {
+            _sensor.AllFramesReady -= _sensor_AllFramesReady;
+            (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("Movie.xaml", UriKind.Relative);
+        }
 
-      
+
+        
     }
 
-    }
-
+}

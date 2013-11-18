@@ -71,6 +71,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Help.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PhotoVoiceControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -98,6 +102,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Help.xaml.cs">
+      <DependentUpon>Help.xaml</DependentUpon>
     </Compile>
     <Compile Include="PhotoVoiceControl.xaml.cs">
       <DependentUpon>PhotoVoiceControl.xaml</DependentUpon>
@@ -201,6 +208,7 @@
     <Resource Include="images\video4.png" />
     <Resource Include="images\photo_icon1.png" />
     <Resource Include="MovieMusicImage\Walverine.jpg" />
+    <Resource Include="images\helpicon.jpg" />
     <Content Include="Movies\EndersGame.mp4" />
     <Content Include="Movies\Frozen.mp4" />
     <Content Include="Movies\Gravity.mp4" />

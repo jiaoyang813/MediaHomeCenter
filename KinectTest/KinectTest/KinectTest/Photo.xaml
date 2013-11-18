@@ -6,22 +6,21 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
       d:DesignWidth="1280" d:DesignHeight="720" Title="Photo"
-      Loaded="Page_Loaded">
-    <Page.Background>
-        <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\由上到下.png" />
-    </Page.Background>
+      Loaded="Page_Loaded" Background="Black">
+
 
     <Grid>
-        <Image x:Name="Image" HorizontalAlignment="Left" Height="533" Margin="351,104,0,0" VerticalAlignment="Top" Width="800">
+        <Label Name="StatusLabel"  FontSize="20" Foreground="Yellow" Margin="505,-6,415,695" />
+        <Image x:Name="Image" HorizontalAlignment="Center" Height="720" VerticalAlignment="Center" Width="1280">
             <Image.Source>
                 <BitmapImage x:Name="BitmapImage1" UriSource="F:\KinectTest\KinectTest\KinectTest\Photo\1.jpg" >
-                    
+              
                 </BitmapImage>
             </Image.Source>
 
         </Image>
-        <Label x:Name="Label1" Content="1/10" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="14.218,0.766" Margin="600,10,0,0" Height="71" Width="216" FontWeight="Bold" FontSize="36"/>
-        <Label x:Name="statusLabel" Content="Gesture Control"  Foreground="Black" HorizontalAlignment="Left" Height="77" Margin="34,256,0,0" VerticalAlignment="Top" Width="264" FontSize="36"/>
+        <Label x:Name="Label1" Content="1/10" Foreground="Yellow" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="14.218,0.766" Margin="290,-8,0,0" Height="37" Width="182" FontWeight="Bold" FontSize="20"/>
+        <Label x:Name="statusLabel" Content="Gesture Control"  Foreground="Yellow" HorizontalAlignment="Left" Height="39" Margin="0,-8,0,0" VerticalAlignment="Top" Width="165" FontSize="20"/>
 
     </Grid>
 </Page>

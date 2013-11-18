@@ -33,6 +33,7 @@ namespace KinectTest
         public PhotoVoiceControl()
         {
             InitializeComponent();
+            _sensor = Generics.GlobalKinectSensorChooser.Kinect;
             
         }
         public PhotoVoiceControl(string a,KinectSensor w)
@@ -78,12 +79,17 @@ namespace KinectTest
                 directions.Add(new SemanticResultValue("forward", "FORWARD"));
                 directions.Add(new SemanticResultValue("forwards", "FORWARD"));
                 directions.Add(new SemanticResultValue("straight", "FORWARD"));
+                directions.Add(new SemanticResultValue("next", "FORWARD"));
+                directions.Add(new SemanticResultValue("go right", "FORWARD"));
+                directions.Add(new SemanticResultValue("right", "FORWARD"));
                 directions.Add(new SemanticResultValue("backward", "BACKWARD"));
                 directions.Add(new SemanticResultValue("backwards", "BACKWARD"));
-                directions.Add(new SemanticResultValue("back", "BACKWARD"));
+                //directions.Add(new SemanticResultValue("back", "BACKWARD"));
+                directions.Add(new SemanticResultValue("previous", "BACKWARD"));
+                directions.Add(new SemanticResultValue("go left", "BACKWARD"));
+                directions.Add(new SemanticResultValue("left", "BACKWARD"));
                 directions.Add(new SemanticResultValue("rotate", "ROTATE"));
                 directions.Add(new SemanticResultValue("hand", "HAND"));
-                directions.Add(new SemanticResultValue("next", "FORWARD"));
                 directions.Add(new SemanticResultValue("gesture", "HAND"));
                 directions.Add(new SemanticResultValue("quit", "MAIN"));
                
@@ -93,13 +99,6 @@ namespace KinectTest
                
                 var g = new Grammar(gb);
                 speechEngine.LoadGrammar(g);
-
-                // Create a grammar from grammar definition XML file.
-                //using (var memoryStream = new MemoryStream(Encoding.ASCII.GetBytes(Properties.Resources.SpeechGrammar)))
-                //{
-                //    var g = new Grammar(memoryStream);
-                //    speechEngine.LoadGrammar(g);
-                //}
 
                 speechEngine.SpeechRecognized += SpeechRecognized;
                 speechEngine.SpeechRecognitionRejected += SpeechRejected;
@@ -117,16 +116,14 @@ namespace KinectTest
 
         private void SpeechRejected(object sender, SpeechRecognitionRejectedEventArgs e)
         {
-            MessageBox.Show("What?Say again!");
+            //MessageBox.Show("What?Say again!");
            // throw new NotImplementedException();
         }
         
 
         private void SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
-        {
-            
-            
-            if (e.Result.Confidence < 0.5)
+        {  
+            if (e.Result.Confidence < 0.7)
             { return; }
             string semantic = "";
             switch ( e.Result.Semantics.Value.ToString() )
@@ -148,65 +145,65 @@ namespace KinectTest
                     }
                     break;
                 case "ROTATE":
-                     RotateCount += 1;
-                        //Rotate
-                        //Create source
-                        BitmapImage bi = new BitmapImage();
-                        //BitmapImage properties must be in a BeginInit/EndInit block
-                        bi.BeginInit();
-                        bi.UriSource = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Photo\"+photoCount.ToString()+".jpg", UriKind.RelativeOrAbsolute);
-                        //Set image rotation
-                        if (RotateCount % 4 == 1)
-                        {
-                            bi.Rotation = Rotation.Rotate90;
-                        }
-                        else if (RotateCount % 4 == 2)
-                        {
-                            bi.Rotation = Rotation.Rotate180;
-                        }
-                        else if (RotateCount % 4 == 3)
-                        {
-                            bi.Rotation = Rotation.Rotate270;
-                        }
-                        else if (RotateCount % 4 == 0)
-                        {
-                            bi.Rotation = Rotation.Rotate0;
-                        }
-                        bi.EndInit();
-                        //set image source
-                        Image.Source = bi;
+                    RotateCount += 1;
+                    //Rotate
+                    //Create source
+                    BitmapImage bi = new BitmapImage();
+                    //BitmapImage properties must be in a BeginInit/EndInit block
+                    bi.BeginInit();
+                    bi.UriSource = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Photo\" + photoCount.ToString() + ".jpg", UriKind.RelativeOrAbsolute);
+                    //Set image rotation
+                    if (RotateCount % 4 == 1)
+                    {
+                        bi.Rotation = Rotation.Rotate90;
+                    }
+                    else if (RotateCount % 4 == 2)
+                    {
+                        bi.Rotation = Rotation.Rotate180;
+                    }
+                    else if (RotateCount % 4 == 3)
+                    {
+                        bi.Rotation = Rotation.Rotate270;
+                    }
+                    else if (RotateCount % 4 == 0)
+                    {
+                        bi.Rotation = Rotation.Rotate0;
+                    }
+                    bi.EndInit();
+                    //set image source
+                    Image.Source = bi;
                     break;
                 case "HAND":
-                    semantic = "hand";
-                     if (null != this._sensor)
-            {
-                this._sensor.AudioSource.Stop();
-            }
+                            semantic = "hand";
+                             if (null != this._sensor)
+                            {
+                                this._sensor.AudioSource.Stop();
+                            }
 
-            if (null != this.speechEngine)
-            {
-                this.speechEngine.SpeechRecognized -= SpeechRecognized;
-                this.speechEngine.SpeechRecognitionRejected -= SpeechRejected;
-                this.speechEngine.RecognizeAsyncStop();
-            }
-            statusLabel.Content = "Loading...";
-            Photo newPhoto = new Photo("1",_sensor);
-            this.NavigationService.Navigate(newPhoto);
-                    break;
+                            if (null != this.speechEngine)
+                            {
+                                this.speechEngine.SpeechRecognized -= SpeechRecognized;
+                                this.speechEngine.SpeechRecognitionRejected -= SpeechRejected;
+                                this.speechEngine.RecognizeAsyncStop();
+                            }
+                            statusLabel.Content = "Loading...";
+                            Photo newPhoto = new Photo("1");
+                            this.NavigationService.Navigate(newPhoto);
+                            break;
                 case "MAIN":
-               if (null != this._sensor)
-            {
-                this._sensor.AudioSource.Stop();
-            }
+                           if (null != this._sensor)
+                        {
+                            this._sensor.AudioSource.Stop();
+                        }
 
-            if (null != this.speechEngine)
-            {
-                this.speechEngine.SpeechRecognized -= SpeechRecognized;
-                this.speechEngine.SpeechRecognitionRejected -= SpeechRejected;
-                this.speechEngine.RecognizeAsyncStop();
-            }
-            (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("MainMenu.xaml", UriKind.Relative);
-            break;
+                        if (null != this.speechEngine)
+                        {
+                            this.speechEngine.SpeechRecognized -= SpeechRecognized;
+                            this.speechEngine.SpeechRecognitionRejected -= SpeechRejected;
+                            this.speechEngine.RecognizeAsyncStop();
+                        }
+                        (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("MainMenu.xaml", UriKind.Relative);
+                        break;
                 default:
                     break;
             }
@@ -223,7 +220,7 @@ namespace KinectTest
                 string value;
                 recognizer.AdditionalInfo.TryGetValue("Kinect", out value);
                 if ("True".Equals(value, StringComparison.OrdinalIgnoreCase) && "en-US".Equals(recognizer.Culture.Name, StringComparison.OrdinalIgnoreCase))
-                {  
+                {
                     return recognizer;
                 }
             }

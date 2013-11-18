@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -14,22 +13,24 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Kinect;
 using Microsoft.Kinect.Toolkit;
-using System.Windows.Threading;
+using Microsoft.Kinect.Toolkit.Controls;
 
 namespace KinectTest
 {
     /// <summary>
-    /// Interaction logic for Player.xaml
+    /// Interaction logic for Movie.xaml
     /// </summary>
-    public partial class SongPlayer : Page
+    public partial class Help : Page
     {
         KinectSensor _sensor;
+        public KinectSensorChooser sensorChooser;
+
         bool playOrNot = true;
         bool closing = false;
         const int skeletoncount = 6;
         Skeleton[] allSkeletons = new Skeleton[skeletoncount];
         //private List<RightHandPoint> RightHandPointsList;
-        private List<LeftHandPoint> LeftHandPointsList;
+        private List<LeftHandPoint> LeftHandPointsList = new List<LeftHandPoint>();
         private int LeftWave = 0;
         private bool LeftWaveStart = false;
         private bool IsLeftHandWave = false;
@@ -45,75 +46,90 @@ namespace KinectTest
         private bool IsRightSwipeStart = false;
         private bool IsLeftSwipeStart = false;
 
+        private string pageName;
         System.Threading.Timer timer;
 
-      
-        private string songName;
-        public SongPlayer()
+
+        public Help()
         {
             InitializeComponent();
-            LeftHandPointsList = new List<LeftHandPoint>();
-           
-        }
-       
 
-        
-        ~SongPlayer()
-        {
-            //MessageBox.Show("Destroy songplayer");
+            // initialize the sensor chooser and UI
+            if (sensorChooser == null)
+            {
+                this.sensorChooser = new KinectSensorChooser();
+                this.sensorChooser = Generics.GlobalKinectSensorChooser;
+                this.sensorChooser.KinectChanged += SensorChooserOnKinectChanged;
+                this.sensorChooserUi.KinectSensorChooser = this.sensorChooser;
+            }
         }
 
-        public SongPlayer(string s)
+        public Help(string s)
             : this()
         {
-            this.songName = s;
-            //this._sensor = w.Kinect;
-            MoviePlayer.Source = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Musics\" + songName + ".MP3", UriKind.Absolute);
-            MoviePlayer.Play();
-        }
-        public SongPlayer(string s,KinectSensorChooser w) : this()
-        {
-            this.songName = s;
-            this._sensor = w.Kinect;
-            MoviePlayer.Source = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Musics\" + songName + ".MP3", UriKind.Absolute);
-            MoviePlayer.Play();
+            this.pageName = s;
+
         }
 
-        private void player_Loaded(object sender, RoutedEventArgs e)
+        private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(1000);
-            timer.Tick += (ss, ee) =>
+            this.sensorChooser.Stop();
+        }
+
+        /// <summary>
+        /// Called when the KinectSensorChooser gets a new sensor
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="args">event arguments</param>
+        private void SensorChooserOnKinectChanged(object sender, KinectChangedEventArgs args)
+        {
+            if (args.OldSensor != null)
             {
-                //显示当前视频进度
-                var ts = MoviePlayer.Position;
-                label1.Content = string.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
-                ProgressBar.Value = ts.TotalMilliseconds;
-            };
-            timer.Start();
-        }
+                try
+                {
+                    args.OldSensor.DepthStream.Range = DepthRange.Default;
+                    args.OldSensor.SkeletonStream.EnableTrackingInNearRange = false;
+                    args.OldSensor.DepthStream.Disable();
+                    args.OldSensor.SkeletonStream.Disable();
+                }
+                catch (InvalidOperationException)
+                {
+                    // KinectSensor might enter an invalid state while enabling/disabling streams or stream features.
+                    // E.g.: sensor might be abruptly unplugged.
+                }
+            }
 
+            if (args.NewSensor != null)
+            {
+                try
+                {
+                    args.NewSensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
+                    args.NewSensor.SkeletonStream.Enable();
 
-
-        private void player_MediaOpened(object sender, RoutedEventArgs e)
-        {
-            //显示视频的时长
-            var ts = MoviePlayer.NaturalDuration.TimeSpan;
-            label2.Content = string.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
-            ProgressBar.Maximum = ts.TotalMilliseconds;
-        }
-
-        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            //调整视频进度
-            var ts = TimeSpan.FromMilliseconds(e.NewValue);
-
-            MoviePlayer.Position = ts;
+                    try
+                    {
+                        args.NewSensor.DepthStream.Range = DepthRange.Near;
+                        args.NewSensor.SkeletonStream.EnableTrackingInNearRange = true;
+                        args.NewSensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Seated;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // Non Kinect for Windows devices do not support Near mode, so reset back to default mode.
+                        args.NewSensor.DepthStream.Range = DepthRange.Default;
+                        args.NewSensor.SkeletonStream.EnableTrackingInNearRange = false;
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    // KinectSensor might enter an invalid state while enabling/disabling streams or stream features.
+                    // E.g.: sensor might be abruptly unplugged.
+                }
+            }
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-
+            
             if (_sensor != null)
             {
                 if (_sensor.Status == KinectStatus.Connected)
@@ -123,8 +139,6 @@ namespace KinectTest
                     _sensor.SkeletonStream.Enable();
                     _sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(_sensor_AllFramesReady);
                     _sensor.Start();
-                    // MessageBox.Show("Started");
-
                 }
             }
             else
@@ -140,31 +154,11 @@ namespace KinectTest
                         _sensor.SkeletonStream.Enable();
                         _sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(_sensor_AllFramesReady);
                         _sensor.Start();
-                      
+                        // MessageBox.Show("Started");
+
                     }
                 }
             }
-        }
-
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            
-        }
-
-        private void _sensor_AllFramesReady(object sender, AllFramesReadyEventArgs e)
-        {
-            if (closing)
-            {
-                return;
-            }
-
-            Skeleton first = GetFirstSkeleton(e);
-
-            if (first == null)
-                return;
-
-            GetCameraPoint(first, e);
-          //  throw new NotImplementedException();
         }
 
         //define a struct to store points; (X,Y,Z,T)
@@ -185,7 +179,7 @@ namespace KinectTest
             {
                 return base.GetHashCode();
             }
-        }// end of RightHand
+        }// end of GesturePoint
 
         public struct LeftHandPoint
         {
@@ -204,7 +198,7 @@ namespace KinectTest
             {
                 return base.GetHashCode();
             }
-        }// end of LeftHand
+        }// end of GesturePoint
 
 
         public struct RightShoulderPoint
@@ -302,6 +296,7 @@ namespace KinectTest
                 return base.GetHashCode();
             }
         }// end of RightWristPoint
+
         public struct HeadPoint
         {
             public double X { get; set; }
@@ -320,27 +315,35 @@ namespace KinectTest
                 return base.GetHashCode();
             }
         }// end of HeadPoint
-        public struct SpinePoint
+
+        private void _sensor_AllFramesReady(object sender, AllFramesReadyEventArgs e)
         {
-            public double X { get; set; }
-            public double Y { get; set; }
-            public double Z { get; set; }
-            public DateTime T { get; set; }
 
-            public override bool Equals(object obj)
+            Skeleton first = GetFirstSkeleton(e);
+
+            if (first == null)
+                return;
+
+            using (ColorImageFrame colorFrame = e.OpenColorImageFrame())
             {
-                var o = (SpinePoint)obj;
-                return X == o.X && Y == o.Y && Z == o.Z;
+                if (colorFrame == null)
+                    return;
+
+                byte[] pixels = new byte[colorFrame.PixelDataLength];
+                colorFrame.CopyPixelDataTo(pixels);
+                int stride = colorFrame.Width * 4; // RGB+ empty color
+                cameraImage.Source = BitmapSource.Create(colorFrame.Width, colorFrame.Height
+                    , 96, 96, PixelFormats.Bgr32, null, pixels, stride);
+
             }
 
-            public override int GetHashCode()
-            {
-                return base.GetHashCode();
-            }
-        }// end of SpinePoint
+            GetCameraPoint(first, e);
+            //  throw new NotImplementedException();
+        }
 
         private void GetCameraPoint(Skeleton first, AllFramesReadyEventArgs e)
         {
+
             using (DepthImageFrame depthFrame = e.OpenDepthImageFrame())
             {
                 if (depthFrame == null || _sensor == null)
@@ -357,7 +360,7 @@ namespace KinectTest
                     Z = RightHandDepthPoint.Depth,
                     T = DateTime.Now
                 };
-                RightHandPoint startRightHandPoint;
+
 
                 //left hand point information
                 DepthImagePoint LeftHandDepthPoint = depthFrame.MapFromSkeletonPoint(first.Joints[JointType.HandLeft].Position);
@@ -368,7 +371,7 @@ namespace KinectTest
                     Z = LeftHandDepthPoint.Depth,
                     T = DateTime.Now
                 };
-                LeftHandPoint startLeftHandPoint;
+
                 // right shoulder point information
                 DepthImagePoint RightShoulderDepthPoint = depthFrame.MapFromSkeletonPoint(first.Joints[JointType.ShoulderRight].Position);
                 RightShoulderPoint newRightShoulderPoint = new RightShoulderPoint()
@@ -433,19 +436,12 @@ namespace KinectTest
                 if (newHeadPoint.Z < 1700 || newHeadPoint.Z > 2000)
                 {
                     StatusLabel.Content = "";
-                    ProgressBar.Visibility = System.Windows.Visibility.Hidden;
-                    label1.Visibility = System.Windows.Visibility.Hidden;
-                    label2.Visibility = System.Windows.Visibility.Hidden;
                     LeftHandPointsList.Clear();
                     return;
                 }
-                
-
 
                 StatusLabel.Content = "Control Mode(1.7m~2m): " + newHeadPoint.Z / 1000 + "m";
-                ProgressBar.Visibility = System.Windows.Visibility.Visible;
-                label1.Visibility = System.Windows.Visibility.Visible;
-                label2.Visibility = System.Windows.Visibility.Visible;
+
                 // the left hand  push event;
                 if (newLeftHandPoint.X > newLeftElbowPoint.X)
                 {
@@ -456,7 +452,7 @@ namespace KinectTest
                 if (newLeftHandPoint.Y < newHeadPoint.Y)// left hand wave to quit
                 {
                     // MessageBox.Show("Left wave");
-                    LeftHandWave(newLeftHandPoint, newHeadPoint, newLeftElbowPoint);
+                    LeftHandWave(newLeftHandPoint, newHeadPoint);
                 }
                 else
                 {
@@ -487,7 +483,8 @@ namespace KinectTest
                 }
 
                 //left swipe
-                if (newLeftHandPoint.Y > newLeftShoulderPoint.Y && newLeftHandPoint.X < newHeadPoint.X - 200)
+                if (newLeftHandPoint.Y > newLeftShoulderPoint.Y 
+                    && newLeftHandPoint.X < newHeadPoint.X - 200)
                 {
                     leftSwipeGesture();
                 }
@@ -495,11 +492,30 @@ namespace KinectTest
                 {
                     IsLeftSwipeStart = false;
                 }
-          
+
+            }// end of using statement
+        }
+        // end of GetCamera point
+
+
+        private Skeleton GetFirstSkeleton(AllFramesReadyEventArgs e)
+        {
+            using (SkeletonFrame skeletonFrameData = e.OpenSkeletonFrame())
+            {
+                if (skeletonFrameData == null)
+                    return null;
+
+                skeletonFrameData.CopySkeletonDataTo(allSkeletons);
+
+                //get the first tracked skeleton
+                Skeleton first = (from s in allSkeletons
+                                  where s.TrackingState == SkeletonTrackingState.Tracked
+                                  select s).FirstOrDefault();
+
+                return first;
             }
-        }// end of GetCamera point
 
-
+        }
 
         private void VolumeControl(RightHandPoint newRightHandPoint, HeadPoint newHeadPoint)
         {
@@ -512,18 +528,52 @@ namespace KinectTest
                         && Math.Abs(newHeadPoint.X - newRightHandPoint.X) > 40)
                     {
                         VolumeState = 1;
+                        GestureLabel.UpdateLayout();
+                        if (GestureLabel.Visibility == Visibility.Hidden)
+                        {
+                            GestureLabel.Content = "Volume Control Stage 1";
+                            GestureLabel.Visibility = Visibility.Visible;
+                            timer = new System.Threading.Timer(
+                                   (state) =>
+                                   {
+                                       GestureLabel.Dispatcher.BeginInvoke((Action)(() =>
+                                       {
+                                           GestureLabel.Visibility = Visibility.Hidden;
+                                       }));
+                                   }, null, 1000, Int32.MaxValue);
+
+                        }
+                        else
+                        {
+                            GestureLabel.Content = "Volume Control Stage 1";
+                        }
                         //volumeLabel.Content = "Volume:" + VolumeSlider.Value;
                     }
                     break;
                 case 1:
-                    VolumeSlider.Value = PreviousVolumeValue + (newHeadPoint.Y - newRightHandPoint.Y);
-                    VolumeSlider.Visibility = System.Windows.Visibility.Visible;
-                    volumeLabel.Content = "Volume:" + VolumeSlider.Value;// ( newHeadPoint.Y - newRightHandPoint.Y )
-
                     if (newRightHandPoint.X - newHeadPoint.X < 50)
                     {
                         VolumeState = 2;
                         IsVolumeStart = true;
+                        GestureLabel.UpdateLayout();
+                        if (GestureLabel.Visibility == Visibility.Hidden)
+                        {
+                            GestureLabel.Content = "Volume Control Stage 2";
+                            GestureLabel.Visibility = Visibility.Visible;
+                            timer = new System.Threading.Timer(
+                                   (state) =>
+                                   {
+                                       GestureLabel.Dispatcher.BeginInvoke((Action)(() =>
+                                       {
+                                           GestureLabel.Visibility = Visibility.Hidden;
+                                       }));
+                                   }, null, 1000, Int32.MaxValue);
+
+                        }
+                        else
+                        {
+                            GestureLabel.Content = "Volume Control Stage 2";
+                        }
                         //MessageBox.Show("Value Changed1 ");
                     }
 
@@ -535,16 +585,30 @@ namespace KinectTest
 
             if (!VolumeStart && IsVolumeStart == true)
             {
-                //if (!VolumeStart)
-                // MessageBox.Show("Value Changed2 " + (newHeadPoint.Y - newRightHandPoint.Y));
+
                 IsVolumeStart = false;
-                PreviousVolumeValue = VolumeSlider.Value;
-                volumeLabel.Content = "";
-                VolumeSlider.Visibility = System.Windows.Visibility.Hidden;
                 VolumeStart = true;
                 VolumeState = 0;
-                //VolumeSlider.Value += newHeadPoint.Y - RightHandPointsList.Last().Y;
-                //return;
+                GestureLabel.UpdateLayout();
+                if (GestureLabel.Visibility == Visibility.Hidden)
+                {
+                    GestureLabel.Content = "Volume Control Succeed!";
+                    GestureLabel.Visibility = Visibility.Visible;
+                    timer = new System.Threading.Timer(
+                           (state) =>
+                           {
+                               GestureLabel.Dispatcher.BeginInvoke((Action)(() =>
+                               {
+                                   GestureLabel.Visibility = Visibility.Hidden;
+                               }));
+                           }, null, 1000, Int32.MaxValue);
+
+                }
+                else
+                {
+                    GestureLabel.Content = "Volume Control Succeed!";
+                }
+                
             }
             else
             {
@@ -559,25 +623,25 @@ namespace KinectTest
             {
                 IsRightSwipeStart = true;
                 // write the control here
-                MoviePlayer.Position = MoviePlayer.Position + TimeSpan.FromSeconds(5);
-                Label1.UpdateLayout();
-                if (Label1.Visibility == Visibility.Hidden)
+
+                GestureLabel.UpdateLayout();
+                if (GestureLabel.Visibility == Visibility.Hidden)
                 {
-                    Label1.Content = "FORWARD";
-                    Label1.Visibility = Visibility.Visible;
+                    GestureLabel.Content = "Forward/Next Photo";
+                    GestureLabel.Visibility = Visibility.Visible;
                     timer = new System.Threading.Timer(
                            (state) =>
                            {
-                               Label1.Dispatcher.BeginInvoke((Action)(() =>
+                               GestureLabel.Dispatcher.BeginInvoke((Action)(() =>
                                {
-                                   Label1.Visibility = Visibility.Hidden;
+                                   GestureLabel.Visibility = Visibility.Hidden;
                                }));
                            }, null, 1000, Int32.MaxValue);
 
                 }
                 else
                 {
-                    Label1.Content = "FORWARD";
+                    GestureLabel.Content = "Forward/Next Photo";
                 }
             }
         }// end of righte swipte gesture
@@ -589,25 +653,24 @@ namespace KinectTest
             {
                 IsLeftSwipeStart = true;
                 //write control here
-                MoviePlayer.Position = MoviePlayer.Position - TimeSpan.FromSeconds(5);
-                Label1.UpdateLayout();
-                if (Label1.Visibility == Visibility.Hidden)
+                GestureLabel.UpdateLayout();
+                if (GestureLabel.Visibility == Visibility.Hidden)
                 {
-                    Label1.Content = "BACKWARD";
-                    Label1.Visibility = Visibility.Visible;
+                    GestureLabel.Content = "Rewind/Previous Photo";
+                    GestureLabel.Visibility = Visibility.Visible;
                     timer = new System.Threading.Timer(
                            (state) =>
                            {
-                               Label1.Dispatcher.BeginInvoke((Action)(() =>
+                               GestureLabel.Dispatcher.BeginInvoke((Action)(() =>
                                {
-                                   Label1.Visibility = Visibility.Hidden;
+                                   GestureLabel.Visibility = Visibility.Hidden;
                                }));
                            }, null, 1000, Int32.MaxValue);
 
                 }
                 else
                 {
-                    Label1.Content = "BACKWARD";
+                    GestureLabel.Content = "Rewind/Previous Photo";
                 }
             }
         }
@@ -642,59 +705,27 @@ namespace KinectTest
                 {
                     LeftHandPointsList.Clear();
 
-                    if (!playOrNot)
-                    {
-                        MoviePlayer.Play();
-                        playOrNot = true;
-                        Label1.UpdateLayout();
-                        if (Label1.Visibility == Visibility.Hidden)
+                    
+                        GestureLabel.UpdateLayout();
+                        if (GestureLabel.Visibility == Visibility.Hidden)
                         {
-                            Label1.Content = "PLAY";
-                            Label1.Visibility = Visibility.Visible;
-
+                            GestureLabel.Content = "Play/Pause";
+                            GestureLabel.Visibility = Visibility.Visible;
                             timer = new System.Threading.Timer(
                                    (state) =>
                                    {
-                                       Label1.Dispatcher.BeginInvoke((Action)(() =>
+                                       GestureLabel.Dispatcher.BeginInvoke((Action)(() =>
                                        {
-                                           Label1.Visibility = Visibility.Hidden;
+                                           GestureLabel.Visibility = Visibility.Hidden;
                                        }));
                                    }, null, 1000, Int32.MaxValue);
 
                         }
                         else
                         {
-                            Label1.Content = "PLAY";
+                            GestureLabel.Content = "Play/Pause";
                         }
-                    }
-                    else
-                    {
-                        MoviePlayer.Pause();
-                        playOrNot = false;
-                        Label1.UpdateLayout();
-                        if (Label1.Visibility == Visibility.Hidden)
-                        {
-                            Label1.Content = "PAUSE";
-                            Label1.Visibility = Visibility.Visible;
-
-
-                            timer = new System.Threading.Timer(
-                                   (state) =>
-                                   {
-                                       Label1.Dispatcher.BeginInvoke((Action)(() =>
-                                       {
-                                           Label1.Visibility = Visibility.Hidden;
-                                       }));
-                                   }, null, 1000, Int32.MaxValue);
-
-
-                        }
-                        else
-                        {
-                            Label1.Content = "PAUSE";
-                        }
-
-                    }
+                    
 
                 }
 
@@ -706,69 +737,42 @@ namespace KinectTest
         }
 
         //a very simple version of left hand wave
-        private void LeftHandWave(LeftHandPoint newLeftHandPoint, HeadPoint newHeadPoint, LeftElbowPoint newLeftElbowPoint)
+        private void LeftHandWave(LeftHandPoint newLeftHandPoint, HeadPoint newHeadPoint)
         {
             //left hand wave gesture(start = 0, raisehand = 1, rightside = 2, leftside = 3, putdown = 4)
             if (!IsLeftHandWave && newHeadPoint.X - newLeftHandPoint.X > 200)
             //left hand wave gesture(start = 0, raisehand = 1, rightside = 2, leftside = 3, putdown = 4)
             {
                 IsLeftHandWave = true;
+                GestureLabel.UpdateLayout();
+                if (GestureLabel.Visibility == Visibility.Hidden)
+                {
+                    GestureLabel.Content = "Quit";
+                    GestureLabel.Visibility = Visibility.Visible;
+                    timer = new System.Threading.Timer(
+                           (state) =>
+                           {
+                               GestureLabel.Dispatcher.BeginInvoke((Action)(() =>
+                               {
+                                   GestureLabel.Visibility = Visibility.Hidden;
+                               }));
+                           }, null, 1000, Int32.MaxValue);
+
+                }
+                else
+                {
+                    GestureLabel.Content = "Quit";
+                }
                 _sensor.AllFramesReady -= _sensor_AllFramesReady;
-                GC.Collect();
-                (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("Song.xaml", UriKind.RelativeOrAbsolute);
+                (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("MainMenu.xaml", UriKind.RelativeOrAbsolute);
+
             }
 
-            // closing the event handler
 
 
         }
 
-        private void ResetGesturePoints(List<RightHandPoint> gesturePoints)
-        {
-            for (int i = 0; i < gesturePoints.Count; i++)
-            {
-                gesturePoints.RemoveAt(i);
-            }
-            // throw new NotImplementedException();
-        }
-
-        
-        private Skeleton GetFirstSkeleton(AllFramesReadyEventArgs e)
-        {
-            using (SkeletonFrame skeletonFrameData = e.OpenSkeletonFrame())
-            {
-                if (skeletonFrameData == null)
-                    return null;
-
-                skeletonFrameData.CopySkeletonDataTo(allSkeletons);
-
-                //get the first tracked skeleton
-                Skeleton first = (from s in allSkeletons
-                                  where s.TrackingState == SkeletonTrackingState.Tracked
-                                  select s).FirstOrDefault();
-
-                return first;
-            }
-            //   throw new NotImplementedException();
-        }
-
-        void StopKinect(KinectSensor sensor)
-        {
-            if (sensor != null)
-            {
-                closing = true;
-                _sensor.AllFramesReady -= new EventHandler<AllFramesReadyEventArgs>(_sensor_AllFramesReady);
-            }
-        }
-
-        private void MoviePlayer_MediaEnded_1(object sender, RoutedEventArgs e)
-        {
-            _sensor.AllFramesReady -=_sensor_AllFramesReady;
-            (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("Song.xaml", UriKind.Relative);
-        }
 
 
     }
-
 }
-

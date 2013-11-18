@@ -5,15 +5,16 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
-      d:DesignWidth="1280" d:DesignHeight="720" Title="Movie">
+      d:DesignWidth="1280" d:DesignHeight="720" Title="Song" Loaded="Page_Loaded">
     <Page.Background>
         <ImageBrush ImageSource="images\background.png" />
     </Page.Background>
-
+    
     <Grid Width="1280" Height="720">
+        <Label Name="StatusLabel" Visibility="Visible" FontSize="20" Foreground="Yellow" Margin="470,-41,463,720" />
         <k:KinectSensorChooserUI HorizontalAlignment="Center" VerticalAlignment="Top" Name="sensorChooserUi" />
         <k:KinectUserViewer k:KinectRegion.KinectRegion="{Binding ElementName=kinectRegion}" Height="100" HorizontalAlignment="Center" VerticalAlignment="Top" />
-
+        
         <k:KinectRegion Name="kinectRegion" Margin="0,80,0,0">
             <k:KinectScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" HoverBackground="Transparent" Margin="0,24,0,-24">
                 <Grid Width="1120" Height="1050" Margin="0,-100,0,0">

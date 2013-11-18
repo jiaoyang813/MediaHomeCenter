@@ -23,8 +23,12 @@ namespace KinectTest
     /// </summary>
     public partial class MainMenu : Page
     {
-        private KinectSensorChooser sensorChooser;
-        
+        public KinectSensorChooser sensorChooser;
+        public KinectSensor _sensor;
+        const int skeletoncount = 6;
+        Skeleton[] allSkeletons = new Skeleton[skeletoncount];
+        public bool IsLeftHandWave = false;
+
         public MainMenu()
         {
             InitializeComponent();
@@ -106,9 +110,8 @@ namespace KinectTest
         // Called when movie button clicked
         private void Movie1ButtonOnClick(object sender, RoutedEventArgs e)
         {
-            this.sensorChooser.KinectChanged -= SensorChooserOnKinectChanged;
-         //   (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("Movie.xaml", UriKind.Relative);
-
+            this._sensor.AllFramesReady -= this._sensor_AllFramesReady;
+            
             Movie m = new Movie("movie");
             this.NavigationService.Navigate(m);
         }
@@ -116,8 +119,8 @@ namespace KinectTest
         // Called when music button clicked
         private void Movie2ButtonOnClick(object sender, RoutedEventArgs e)
         {
-            this.sensorChooser.KinectChanged -= SensorChooserOnKinectChanged;
-            
+           // this.sensorChooser.KinectChanged -= SensorChooserOnKinectChanged;
+            this._sensor.AllFramesReady -= this._sensor_AllFramesReady;
             Song m = new Song("song");
             this.NavigationService.Navigate(m);
         }
@@ -125,10 +128,194 @@ namespace KinectTest
         // Called when photo button clicked
         private void PhotoButtonOnClick(object sender, RoutedEventArgs e)
         {
-            
-
-            Photo m = new Photo("1",sensorChooser);
+            //this.sensorChooser.KinectChanged -= SensorChooserOnKinectChanged;
+            this._sensor.AllFramesReady -= this._sensor_AllFramesReady;
+            Photo m = new Photo("1");
             this.NavigationService.Navigate(m);
         }
+
+        private void HelpButtonClick(object sender, RoutedEventArgs e)
+        {
+            _sensor.AllFramesReady -= _sensor_AllFramesReady;
+            Help h = new Help("help");
+            this.NavigationService.Navigate(h);
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            //_sensor = Generics.GlobalKinectSensorChooser.Kinect;
+            if (_sensor != null)
+            {
+                if (_sensor.Status == KinectStatus.Connected)
+                {
+                    _sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+                    _sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
+                    _sensor.SkeletonStream.Enable();
+                    _sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(_sensor_AllFramesReady);
+                    _sensor.Start();
+                }
+            }
+            else
+            {
+                // at least one sensor
+                if (KinectSensor.KinectSensors.Count > 0)
+                {
+                    _sensor = KinectSensor.KinectSensors[0];
+                    if (_sensor.Status == KinectStatus.Connected)
+                    {
+                        _sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+                        _sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
+                        _sensor.SkeletonStream.Enable();
+                        _sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(_sensor_AllFramesReady);
+                        _sensor.Start();
+                        // MessageBox.Show("Started");
+
+                    }
+                }
+            }
+        }
+
+        public struct HeadPoint
+        {
+            public double X { get; set; }
+            public double Y { get; set; }
+            public double Z { get; set; }
+            public DateTime T { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                var o = (HeadPoint)obj;
+                return X == o.X && Y == o.Y && Z == o.Z;
+            }
+
+            public override int GetHashCode()
+            {
+                return base.GetHashCode();
+            }
+        }// end of HeadPoint
+
+        public struct LeftHandPoint
+        {
+            public double X { get; set; }
+            public double Y { get; set; }
+            public double Z { get; set; }
+            public DateTime T { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                var o = (LeftHandPoint)obj;
+                return X == o.X && Y == o.Y && Z == o.Z;
+            }
+
+            public override int GetHashCode()
+            {
+                return base.GetHashCode();
+            }
+        }// end of LeftHand
+
+        private void _sensor_AllFramesReady(object sender, AllFramesReadyEventArgs e)
+        {
+
+            Skeleton first = GetFirstSkeleton(e);
+
+            if (first == null)
+                return;
+
+            GetCameraPoint(first, e);
+            //  throw new NotImplementedException();
+        }
+
+        private void GetCameraPoint(Skeleton first, AllFramesReadyEventArgs e)
+        {
+
+            using (DepthImageFrame depthFrame = e.OpenDepthImageFrame())
+            {
+                if (depthFrame == null || _sensor == null)
+                    return;
+
+                // DepthImagePoint headDepthPoint = depthFrame.MapFromSkeletonPoint(first.Joints[JointType.Head].Position);
+
+
+                //left hand point information
+                DepthImagePoint LeftHandDepthPoint = depthFrame.MapFromSkeletonPoint(first.Joints[JointType.HandLeft].Position);
+                LeftHandPoint newLeftHandPoint = new LeftHandPoint()
+                {
+                    X = LeftHandDepthPoint.X,
+                    Y = LeftHandDepthPoint.Y,
+                    Z = LeftHandDepthPoint.Depth,
+                    T = DateTime.Now
+                };
+
+
+                DepthImagePoint HeadDepthPoint = depthFrame.MapFromSkeletonPoint(first.Joints[JointType.Head].Position);
+                HeadPoint newHeadPoint = new HeadPoint()
+                {
+                    X = HeadDepthPoint.X,
+                    Y = HeadDepthPoint.Y,
+                    Z = HeadDepthPoint.Depth,
+                    T = DateTime.Now
+                };
+
+                //user should stand in the right place before eveything start
+                // the two if condition requires the user to stand in front of Kinect in a box area
+                if (newHeadPoint.Z < 1700 || newHeadPoint.Z > 2000)
+                {
+                    StatusLabel.Visibility = System.Windows.Visibility.Hidden;
+                    StatusLabel.Content = "";
+                    return;
+                }
+
+                StatusLabel.Visibility = System.Windows.Visibility.Visible;
+                StatusLabel.Content = "Control Mode(1.7m~2m): " + newHeadPoint.Z / 1000 + "m";
+                // left hand wave to quit system
+                if (newLeftHandPoint.Y < newHeadPoint.Y)
+                {
+                    // MessageBox.Show("Left wave");
+                    LeftHandWave(newLeftHandPoint, newHeadPoint);
+                }
+                else
+                {
+                    IsLeftHandWave = false;
+                }
+
+
+            }// end of using statement
+        }
+
+        // end of GetCamera point
+        private Skeleton GetFirstSkeleton(AllFramesReadyEventArgs e)
+        {
+            using (SkeletonFrame skeletonFrameData = e.OpenSkeletonFrame())
+            {
+                if (skeletonFrameData == null)
+                    return null;
+
+                skeletonFrameData.CopySkeletonDataTo(allSkeletons);
+
+                //get the first tracked skeleton
+                Skeleton first = (from s in allSkeletons
+                                  where s.TrackingState == SkeletonTrackingState.Tracked
+                                  select s).FirstOrDefault();
+
+                return first;
+            }
+
+        }
+
+        //a very simple version of left hand wave
+        private void LeftHandWave(LeftHandPoint newLeftHandPoint, HeadPoint newHeadPoint)
+        {
+            if ( !IsLeftHandWave &&newHeadPoint.X - newLeftHandPoint.X > 200)
+            //left hand wave gesture(start = 0, raisehand = 1, rightside = 2, leftside = 3, putdown = 4)
+            {
+                IsLeftHandWave = true;
+               // System.Threading.Thread.Sleep(1000);
+               // MessageBox.Show("MainMenu");
+                Application.Current.Shutdown();
+            }
+
+        }
+
+
     }
 }

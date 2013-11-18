@@ -3,13 +3,28 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      mc:Ignorable="d" Loaded="Page_Loaded"
+      mc:Ignorable="d" Loaded="Page_Loaded" Unloaded="Page_Unloaded"
 	Title="Player" Height="720" Width="1280" >
     <Page.Background>
         <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\music1.jpg" />
     </Page.Background>
     <Grid>
-        <MediaElement Name="MoviePlayer" LoadedBehavior="Manual" UnloadedBehavior="Stop" Volume="10" />
+        <MediaElement Name="MoviePlayer" LoadedBehavior="Manual" UnloadedBehavior="Stop" Volume="10" MediaOpened="player_MediaOpened" Loaded="player_Loaded" MediaEnded="MoviePlayer_MediaEnded_1" Margin="0,-23,0,23"/>
+        <ProgressBar Foreground="DarkBlue" Background="White" Height="23" Margin="147,697,145,0" Name="ProgressBar" VerticalAlignment="Top" Maximum="100" Visibility="Hidden"  />
+        <Label x:Name="label1" FontSize="12" Foreground="Yellow" Content="" HorizontalAlignment="Left" Margin="85,697,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.158,0" Width="57" Height="23" Visibility="Hidden"/>
+        <Label x:Name="label2" Foreground="Yellow" Content="" HorizontalAlignment="Left" Margin="1135,697,0,0" VerticalAlignment="Top" Width="93" Height="23" Visibility="Hidden"/>
         <Label x:Name="Label1" FontSize="40" Foreground="LawnGreen" Content="" HorizontalAlignment="Left" Margin="451,31,0,0" VerticalAlignment="Top" Height="77" Width="382" Visibility="Hidden"/>
+        <Label Name="StatusLabel"  FontSize="20" Foreground="Yellow" Margin="505,-23,415,712" />
+        <Label Name="volumeLabel" Foreground="Yellow" FontSize="40" Margin="1027,-18,0,653" />
+        <Slider Name="VolumeSlider" HorizontalAlignment="Left" Margin="1007,313,-244,0" VerticalAlignment="Top" Height="20" Width="517" RenderTransformOrigin="0.5,0.5" Value="{Binding Path=Volume,ElementName=MoviePlayer}" Maximum="100" Visibility="Hidden">
+            <Slider.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="270"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Slider.RenderTransform>
+        </Slider>
     </Grid>
 </Page>

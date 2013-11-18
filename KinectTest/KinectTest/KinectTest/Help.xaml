@@ -1,0 +1,38 @@
+﻿<Page x:Class="KinectTest.Help"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:k="http://schemas.microsoft.com/kinect/2013"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d"  Loaded="Page_Loaded"
+      d:DesignWidth="1280" d:DesignHeight="720" Title="Help">
+    <Page.Background>
+        <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\由上到下.png" />
+    </Page.Background>
+
+    <Grid Width="1280" Height="720">
+        <Label Name="StatusLabel" Visibility="Visible" FontSize="20" Foreground="Yellow" Margin="473,-41,460,720" />
+        <k:KinectSensorChooserUI HorizontalAlignment="Center" VerticalAlignment="Top" Name="sensorChooserUi" />
+        <k:KinectUserViewer k:KinectRegion.KinectRegion="{Binding ElementName=kinectRegion}" Height="100" HorizontalAlignment="Center" VerticalAlignment="Top" />
+        <Grid>
+            <Image Name="cameraImage" HorizontalAlignment="Left" VerticalAlignment="Top" Height="381" Width="569" Margin="10,8,0,0"/>
+            <Label Content="Gesture Recognized:" FontFamily="Helvetica" FontSize="40" Margin="68,389,794,274" />
+            <Label Name="GestureLabel" FontFamily="Helvetica" FontSize="40" Visibility="Hidden" Margin="79,451,732,190"/>
+            <Label Content="Voice Commands:" FontFamily="Helvetica" FontSize="40" Margin="68,530,830,131"/>
+            <Label Content="Next Photo:forward(s)/next/(go) right            Rotate photo: rotate                Quit: quit" FontFamily="Helvetica" FontSize="30"  Margin="68,584,49,79"/>
+            <Label Content="Prev Photo: backward(s)/Previous/(go) left    Return to Gesture Control: hand/gesture" FontFamily="Helvetica"  FontSize="30" Margin="68,646,25,2" />
+            <Label Content="Play / Pause" FontFamily="Helvetica" FontSize="40" Margin="812,2,214,662"/>
+            <Label Content="Forward / Next Photo" FontFamily="Helvetica" FontSize="40" Margin="812,110,70,540"/>
+            <Label Content="Rewind / Previous Photo" FontFamily="Helvetica" FontSize="40" Margin="812,216,25,452"/>
+            <Label Content="Volume Control" FontFamily="Helvetica" FontSize="40" Margin="812,318,139,334"/>
+
+            <Label Content="Quit" FontFamily="Helvetica" FontSize="40" Margin="812,425,214,236"/>
+            <Image Name="quitIcon" Height="90" Width="90" Margin="658,425,532,205" Source="images/helpicon.jpg" Stretch="UniformToFill" />
+            <Image Name="PauseStartIcon" Height="90" Width="90" Margin="658,2,532,628" Source="images/helpicon.jpg" Stretch="UniformToFill" />
+            <Image Name="PreviousIcon"  Height="90" Width="90" Margin="658,318,532,312" Source="images/helpicon.jpg" Stretch="UniformToFill" />
+            <Image Name="NextIcon" Height="90" Width="90" Margin="658,216,532,414" Source="images/helpicon.jpg" Stretch="UniformToFill" />
+            <Image Name="VolumeIcon" Height="90" Width="90" Margin="658,110,532,520" Source="images/helpicon.jpg" Stretch="UniformToFill" />
+        </Grid>
+
+    </Grid>
+</Page>

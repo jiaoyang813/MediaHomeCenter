@@ -7,31 +7,15 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Kinect;
 using Microsoft.Kinect.Toolkit;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Text;
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Media;
-using Microsoft.Kinect;
 using Microsoft.Speech.AudioFormat;
 using Microsoft.Speech.Recognition;
 using System.Windows.Threading;
@@ -43,8 +27,7 @@ namespace KinectTest
     public partial class Photo : Page
     {
         KinectSensor _sensor;
-        
-        private int RotateCount = 0;
+        bool playOrNot = true;
         bool closing = false;
         const int skeletoncount = 6;
         Skeleton[] allSkeletons = new Skeleton[skeletoncount];
@@ -52,45 +35,38 @@ namespace KinectTest
         private List<LeftHandPoint> LeftHandPointsList;
         private int LeftWave = 0;
         private bool LeftWaveStart = false;
+        private bool IsLeftHandWave = false;
         private int VolumeState = 0;
+        private bool IsVolumeStart = false;
         private bool VolumeStart = false;
+        private double PreviousVolumeValue = 10;// set as default volume
 
-        private int RotateState = 0;
-        private bool RotateStart = false;
+        //private int RotateState = 0;
+        //private bool RotateStart = false;
+
+        private bool IsRightSwipeStart = false;
+        private bool IsLeftSwipeStart = false;
+
         private int photoCount=1;
         private bool photoForwardOrNot=true;
 
-        
-
-        //System.Timers.Timer volumeUpTimer;
-        //System.Timers.Timer volumeDownTimer;
-
-        //private int counter = 0;
-        // private List<double> historyPoints;
         private string photoName="1";
         public Photo()
         {
             InitializeComponent();
-            
+            _sensor = Generics.GlobalKinectSensorChooser.Kinect;
             LeftHandPointsList = new List<LeftHandPoint>();
         }
-        public Photo(string s,KinectSensorChooser w) : this()
+        public Photo(string s) : this()
         {
             this.photoName = s;
-            this._sensor = w.Kinect;
-        }
-        public Photo(string s,KinectSensor w)
-            : this()
-        {
-            this.photoName = s;
-            this._sensor = w;
             
         }
+        
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-           
-            
+ 
             if (_sensor != null)
             {
                 if (_sensor.Status == KinectStatus.Connected)
@@ -400,291 +376,130 @@ namespace KinectTest
                     T = DateTime.Now
                 };
 
-                //DepthImagePoint HipCenterDepthPoint = depthFrame.MapFromSkeletonPoint(first.Joints[JointType.HipCenter].Position);
-                //SpinePoint newSpinePoint = new SpinePoint()
-                //{
-                //    X = HipCenterDepthPoint.X,
-                //    Y = HipCenterDepthPoint.Y,
-                //    Z = HipCenterDepthPoint.Depth,
-                //    T = DateTime.Now
-                //};
+             
 
-                //MessageBox.Show(newHeadPoint.X.ToString() + newHeadPoint.Y.ToString());
-
-
-
-
-                //Volume Up and Down
-                double x1 = newRightElbowPoint.X;
-                double y1 = newRightElbowPoint.Y;// elbow point(x1, y1)
-                double x2 = newRightWristPoint.X;
-                double y2 = newRightWristPoint.Y;// Wrist point(x2, y2)
-                double x3 = newRightHandPoint.X;
-                double y3 = newRightHandPoint.Y; // hand point (x3, y3)
-
-                double angle1 = Math.Abs(y2 - y1) / Math.Abs(x2 - x1);
-                double angle2 = Math.Abs(y2 - y3) / Math.Abs(x2 - x3);
-
-
-                if (newRightHandPoint.X > newRightShoulderPoint.X + 100)
+                if (newHeadPoint.Z < 1700 || newHeadPoint.Z > 2000)
                 {
-                    VolumeStart = true;
-                    switch (VolumeState)
-                    {
-                        case 0:
-                            if (newRightHandPoint.Y < newRightShoulderPoint.Y)
-                            {
-                                VolumeState = 1; // enter volume up   
-                            }// right hand in upper position
-                            if (newRightHandPoint.Y > newRightShoulderPoint.Y)
-                            {
-                                VolumeState = 2; // right hand in lower position   
-                            }
-                            break;
-                        case 1:
-
-                            if (newRightHandPoint.Y > newRightShoulderPoint.Y)
-                            {
-                                VolumeState = 2; // right hand in lower position
-                            }
-                            else if (Math.Abs(angle1 - angle2) > 0.5) //angle change
-                            {
-                                VolumeState = 3;
-                                // MessageBox.Show("VolumeUp");    
-                            }
-                            break;
-
-                        case 2:
-
-                            if (newRightHandPoint.Y < newRightShoulderPoint.Y)
-                            {
-                                VolumeState = 1;  // right hand in upper position  
-                            }
-                            else if (Math.Abs(angle1 - angle2) > 0.9)//angle change
-                            {
-                                VolumeState = 4;
-                                //MessageBox.Show("VolumeDown");    
-                            }
-                            break;
-
-                    }
+                    StatusLabel.Content = "";
+                    
+                    return;
                 }
 
-                if (Math.Abs(newRightHandPoint.X - newRightShoulderPoint.X) < 50 && newRightHandPoint.Y > newRightElbowPoint.Y && VolumeStart == true)
-                {
-                    if (VolumeState == 3)
-                    {
-                        VolumeStart = false;
-                        VolumeState = 0;
-                        StopKinect(_sensor);
-                        
-                        statusLabel.Content = "Loading...";
-                        PhotoVoiceControl newVoice = new PhotoVoiceControl("1",_sensor);
-                        this.NavigationService.Navigate(newVoice);
-                        return;
-                    }
-
-                    if (VolumeState == 4)
-                    {
-                        VolumeStart = false;
-                        VolumeState = 0;
-                        //Zoomout
-
-                        return;
-                    }
-                }//end of volume control
-                // rotate gesture to move forward and backward
-                // state 0 = in the body area, 1 = spine, 2 = rightshoulder, 3 = head, 4 = leftshoulder
-                if (newRightHandPoint.X > newLeftShoulderPoint.X && newRightHandPoint.X < newRightShoulderPoint.X)
-                // && newRightHandPoint.Y < newSpinePoint.Y && newRightHandPoint.Y > newHeadPoint.Y)
-                {
-                    RotateStart = true;
-
-
-                    switch (RotateState)
-                    {
-
-                        case 0:
-                            if (Math.Abs(newRightHandPoint.X - newRightShoulderPoint.X) < 70 &&
-                                Math.Abs(newRightHandPoint.Y - newRightShoulderPoint.Y) < 70)
-                            {
-                                RotateState = 1;   // leftSHoulder
-                                //MessageBox.Show("Enter Rotate2");
-                            }
-                            break;
-
-                        case 1:
-                            if (Math.Abs(newRightHandPoint.X - newHeadPoint.X) < 70 &&
-                                Math.Abs(newRightHandPoint.Y - newHeadPoint.Y) < 70)
-                            {
-                                RotateState = 2;   // head
-                                //MessageBox.Show("Enter Rotate3");
-                            }
-                            break;
-                        case 2:
-                            if (Math.Abs(newRightHandPoint.X - newLeftShoulderPoint.X) < 70 &&
-                                Math.Abs(newRightHandPoint.Y - newLeftShoulderPoint.Y) < 70)
-                            {
-                                RotateState = 3;   // leftSHoulder
-                                //MessageBox.Show("Enter Rotate4");
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-
-                }
-
+                StatusLabel.Content = "Control Mode(1.7m~2m): "+ newHeadPoint.Z/1000+ "m";
                 
-                if (RotateStart == true)
+               if (newRightHandPoint.Y - newHeadPoint.Y < 0
+                   && newRightHandPoint.X - newRightShoulderPoint.X > -30)
                 {
-                    if (RotateState == 3)
-                    {
-                        RotateStart = false;
-                        RotateState = 0;
-                        RotateCount += 1;
-                        //Rotate
-                        //Create source
-                        BitmapImage bi = new BitmapImage();
-                        //BitmapImage properties must be in a BeginInit/EndInit block
-                        bi.BeginInit();
-                        bi.UriSource = new Uri(@"F:\KinectTest\KinectTest\KinectTest\Photo\"+photoCount.ToString()+".jpg", UriKind.RelativeOrAbsolute);
-                        //Set image rotation
-                        if (RotateCount % 4 == 1)
-                        {
-                            bi.Rotation = Rotation.Rotate90;
-                        }
-                        else if (RotateCount % 4 == 2)
-                        {
-                            bi.Rotation = Rotation.Rotate180;
-                        }
-                        else if (RotateCount % 4 == 3)
-                        {
-                            bi.Rotation = Rotation.Rotate270;
-                        }
-                        else if (RotateCount % 4 == 0)
-                        {
-                            bi.Rotation = Rotation.Rotate0;
-                        }
-                        bi.EndInit();
-                        //set image source
-                        Image.Source = bi;
-                        return;
-                    }
-                } // end of rotate backward
-                //left hand wave gesture(start = 0, raisehand = 1, rightside = 2, leftside = 3, putdown = 4)
-                if (newLeftHandPoint.Y < newHeadPoint.Y)
-                {
-                    LeftWaveStart = true;
-
-                    switch (LeftWave)
-                    {
-                        case 0:
-                            if (newLeftHandPoint.Y < newHeadPoint.Y)
-                                //seg 1 of leftwave
-                                LeftWave = 1;
-                            break;
-                        case 1:
-                            if (newLeftHandPoint.X > newLeftElbowPoint.X + 50)
-                                LeftWave = 2;
-                            break;
-                        case 2:
-                            if (newLeftHandPoint.X + 50 < newLeftElbowPoint.X)
-                                LeftWave = 3;
-                            break;
-                        //case 3:
-                        //    if (newLeftHandPoint.Y > newLeftShoulderPoint.Y)
-                        //        LeftWave = 4;
-                        //    break;
-                    }
-
+                    VolumeControl(newRightHandPoint, newHeadPoint);
                 }
-                // case 4: putdown hands
-                if (newLeftHandPoint.Y > newLeftElbowPoint.Y && LeftWaveStart == true)
+                else
                 {
-                    if (LeftWave == 3)
-                    {
-                        LeftWaveStart = false;
-                        LeftWave = 0;
-                        StopKinect(_sensor);
-                        (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("MainMenu.xaml", UriKind.Relative);
+                    IsVolumeStart = false;
+                }
+
+               // left hand wave to quit
+                 if (newLeftHandPoint.Y < newHeadPoint.Y)
+                {
+                   // MessageBox.Show("Left wave");
+                    LeftHandWave(newLeftHandPoint, newHeadPoint);
+                }
+                else
+                {
+                    IsLeftHandWave = false;
+                }
+
+
+                 if (newRightHandPoint.Y > newRightShoulderPoint.Y
+                     && newRightHandPoint.X > newHeadPoint.X + 200)//right swipe
+                 {
+                     //trigger the right swipe gesture
+                     rightSwipeGesture();
+                 }
+                 else
+                 {
+                     IsRightSwipeStart = false;
+                 }
+
+                 //left swipe
+                 if (newLeftHandPoint.Y > newLeftShoulderPoint.Y 
+                     && newLeftHandPoint.X < newHeadPoint.X - 200)
+                 {
+                     //MessageBox.Show("Swipe left");
+                     leftSwipeGesture();
+                 }
+                 else
+                 {
+                     IsLeftSwipeStart = false;
+                 }
                         
-                        return;
-
-                    }
-                } //end of waveleft
-
-
-                // the  press event;
-                if (newLeftHandPoint.X > newLeftElbowPoint.X)
+            }
+ } // end of GetCamera point
+             
+        private void rightSwipeGesture()
+        {
+            if (!IsRightSwipeStart)
+            {
+                IsRightSwipeStart = true;
+                // write the control here
+                if (photoCount <= 9 )
                 {
-                    LeftHandPointsList.Add(newLeftHandPoint);
-                    startLeftHandPoint = LeftHandPointsList[0];
-
-
-                    // check if press gesture is in the boundary box;
-                    if (Math.Abs(startLeftHandPoint.X - newLeftHandPoint.X) > 100
-                            || Math.Abs(startLeftHandPoint.Y - newLeftHandPoint.Y) > 100)
-                    {
-                        LeftHandPointsList.Clear();
-                        return;
-                    }
-
-
-                    if (Math.Abs(startLeftHandPoint.X - newLeftHandPoint.X) < 100
-                        && Math.Abs(startLeftHandPoint.Y - newLeftHandPoint.Y) < 100)
-                    {
-                        if ((newLeftHandPoint.T - startLeftHandPoint.T).Milliseconds > 500)
-                        {
-                            LeftHandPointsList.RemoveAt(0);
-                            startLeftHandPoint = LeftHandPointsList[0];
-
-                        }
-
-                        if (startLeftHandPoint.Z - newLeftHandPoint.Z > 300)
-                        {
-                            LeftHandPointsList.Clear();
-                            if (photoCount < 10 && photoForwardOrNot)
-                            {
-                                
-                                photoCount += 1;
-                                Image.Source = new BitmapImage(new Uri(@"F:\KinectTest\KinectTest\KinectTest\Photo\" + photoCount.ToString() + ".jpg", UriKind.RelativeOrAbsolute));
-                            }
-                            else if (photoCount == 10)
-                            {
-                                photoForwardOrNot = false;
-                                photoCount -= 1;
-                                Image.Source = new BitmapImage(new Uri(@"F:\KinectTest\KinectTest\KinectTest\Photo\" + photoCount.ToString() + ".jpg", UriKind.RelativeOrAbsolute));
-                            }
-                            else if (photoCount == 1 && !photoForwardOrNot)
-                            {
-                                photoForwardOrNot = true;
-                                photoCount += 1;
-                                Image.Source = new BitmapImage(new Uri(@"F:\KinectTest\KinectTest\KinectTest\Photo\" + photoCount.ToString() + ".jpg", UriKind.RelativeOrAbsolute));
-                            }
-                            else if (photoCount < 10 && !photoForwardOrNot)
-                            {
-                                photoCount -= 1;
-                                Image.Source = new BitmapImage(new Uri(@"F:\KinectTest\KinectTest\KinectTest\Photo\" + photoCount.ToString() + ".jpg", UriKind.RelativeOrAbsolute));
-                            }
-                            
-                            Label1.Content = photoCount.ToString() + "/10";
-
-                            //throw new NotImplementedException();
-
-                        }// end of lefthand press
-
-                        // end of GetCamera point
-                    }
+                    photoCount += 1;
+                    Label1.Content = photoCount.ToString() + "/10";
+                    Image.Source = new BitmapImage(new Uri(@"F:\KinectTest\KinectTest\KinectTest\Photo\" + photoCount.ToString() + ".jpg", UriKind.RelativeOrAbsolute));
                 }
             }
+        }// end of righte swipte gesture
+
+
+        private void leftSwipeGesture()
+        {
+            if (!IsLeftSwipeStart)
+            {
+                IsLeftSwipeStart = true;
+                //write control here
+               if (photoCount >=2 )
+                {
+                    photoCount -= 1;
+                    Label1.Content = photoCount.ToString() + "/10";
+                    Image.Source = new BitmapImage(new Uri(@"F:\KinectTest\KinectTest\KinectTest\Photo\" + photoCount.ToString() + ".jpg", UriKind.RelativeOrAbsolute));
+                }
+                            
+            }
         }
-             
-        
 
 
+		private void VolumeControl(RightHandPoint newRightHandPoint, HeadPoint newHeadPoint)
+		{
+			if(!IsVolumeStart)
+			{
+			    IsVolumeStart = true;
+			
+			    StopKinect(_sensor);
+                        
+			    statusLabel.Content = "Loading...";
+                _sensor.AllFramesReady -= _sensor_AllFramesReady;
+			    PhotoVoiceControl newVoice = new PhotoVoiceControl("1",_sensor);
+			    this.NavigationService.Navigate(newVoice);
+			    return;
+			}
+		}
 
 
+        private void LeftHandWave(LeftHandPoint newLeftHandPoint, HeadPoint newHeadPoint)
+        {
+            //left hand wave gesture(start = 0, raisehand = 1, rightside = 2, leftside = 3, putdown = 4)
+            if (!IsLeftHandWave && newHeadPoint.X - newLeftHandPoint.X > 200)
+            //left hand wave gesture(start = 0, raisehand = 1, rightside = 2, leftside = 3, putdown = 4)
+            {
+                IsLeftHandWave = true;
+                _sensor.AllFramesReady -= _sensor_AllFramesReady;
+                GC.Collect();
+                (Application.Current.MainWindow.FindName("mainFrame") as Frame).Source = new Uri("MainMenu.xaml", UriKind.RelativeOrAbsolute);
+            }
+            // closing the event handler
+            
+           
+        }
 
         private void ResetGesturePoints(List<RightHandPoint> gesturePoints)
         {
@@ -695,13 +510,6 @@ namespace KinectTest
             // throw new NotImplementedException();
         }
 
-        //private void CameraPosition(FrameworkElement element, ColorImagePoint point)
-        //{
-        //    Canvas.SetLeft(element, point.X - element.Width / 2 );
-        //    Canvas.SetTop(element, point.Y - element.Height / 2 );
-
-        //    //throw new NotImplementedException();
-        //}
 
         private Skeleton GetFirstSkeleton(AllFramesReadyEventArgs e)
         {
@@ -725,15 +533,12 @@ namespace KinectTest
         void StopKinect(KinectSensor sensor)
         {
             if (sensor != null)
-            {
-                
+            {   
                 closing = true;
                 _sensor.AllFramesReady -= new EventHandler<AllFramesReadyEventArgs>(_sensor_AllFramesReady);
             }
         }
 
-        
-      
-    }
-}
+    }//end of page
+}// end of namespace kinect test
 

@@ -4,31 +4,37 @@
       xmlns:k="http://schemas.microsoft.com/kinect/2013"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      mc:Ignorable="d" 
-      d:DesignWidth="1280" d:DesignHeight="720" Title="MainMenu">
+      mc:Ignorable="d"  
+      d:DesignWidth="1280" d:DesignHeight="720" Title="MainMenu" Loaded="Page_Loaded">
     <Page.Background>
         <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\grayBackground.png" />
     </Page.Background>
 
     <Grid Width="1280" Height="720">
+        <Label Name="StatusLabel" Visibility="Visible"  FontSize="20" Foreground="Black" Margin="469,-41,464,720" />
         <k:KinectSensorChooserUI HorizontalAlignment="Center" VerticalAlignment="Top" Name="sensorChooserUi" />
         <k:KinectUserViewer k:KinectRegion.KinectRegion="{Binding ElementName=kinectRegion}" Height="100" HorizontalAlignment="Center" VerticalAlignment="Top" />
         <k:KinectRegion Name="kinectRegion" Margin="-25,80,25,0">
             <Grid>
-                
                 <k:KinectTileButton Click="Movie1ButtonOnClick" Height="400" Width="400" Margin="48,113,834,127" BorderBrush="Gray">
                     <k:KinectTileButton.Background>
                         <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\video4.png" />
                     </k:KinectTileButton.Background>
-                    
+
+                </k:KinectTileButton>
+                <k:KinectTileButton  Click="HelpButtonClick" Height="156" Width="152"  BorderBrush="Gray" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="48,-82,0,0">
+                    <k:KinectTileButton.Background>
+                        <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\helpicon.jpg" />
+                    </k:KinectTileButton.Background>
+
                 </k:KinectTileButton>
 
                 <k:KinectTileButton Click="Movie2ButtonOnClick" Height="400" Width="400" Margin="473,113,407,127">
                     <k:KinectTileButton.Background>
                         <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\music_icon2.png" />
                     </k:KinectTileButton.Background>
-                </k:KinectTileButton>                    
-                    
+                </k:KinectTileButton>
+
                 <k:KinectTileButton Click="PhotoButtonOnClick" Height="400" Width="400" Margin="895,113,-23,127">
                     <k:KinectTileButton.Background>
                         <ImageBrush ImageSource="F:\KinectTest\KinectTest\KinectTest\images\photo_icon1.png" />
@@ -36,5 +42,8 @@
                 </k:KinectTileButton>
             </Grid>
         </k:KinectRegion>
+        <Label x:Name="MovieLabel" FontSize="40" Content="Movie" Margin="161,589,921,58"/>
+        <Label x:Name="MusicLabel" FontSize="40" Content="Music" Margin="588,589,494,58"/>
+        <Label x:Name="PhotoLabel" FontSize="40" Content="Photo" Margin="1015,589,67,58"/>
     </Grid>
 </Page>
